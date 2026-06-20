@@ -1,7 +1,14 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
 app = FastAPI()
+
+class Cocktail(BaseModel):
+    id: int
+    name: str
+    spirit: str
+    ingredients: list[str]
 
 cocktails =    [
         {
@@ -95,3 +102,13 @@ def get_cocktail(cocktail_id: int):
             return cocktail
 
     return {"error": "Cocktail not found"}
+
+@app.post("/cocktails")
+def create_cocktail(cocktail: Cocktail):
+
+    cocktails.append(cocktail.dict())
+
+    return {
+        "message": "Cocktail added successfully",
+        "cocktail": cocktail
+    }
