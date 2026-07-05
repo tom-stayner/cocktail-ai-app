@@ -18,7 +18,7 @@ Cocktail AI Application
             python src/main.py
 
             FastAPI Web Application:
-            uvicorn src.main --reload
+            uvicorn src.main:app --reload
 
         Open your browser
             http://localhost:8000
