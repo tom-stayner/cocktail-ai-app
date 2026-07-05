@@ -2,42 +2,36 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from fastapi import HTTPException
+from fastapi.staticfiles import StaticFiles
 import boto3
 
-app = FastAPI()
+app = FastAPI(
+    title="Tom's Cocktail API",
+    description="""
+    A REST API and web application for managing cocktail recipes.
 
-class Cocktail(BaseModel):
-    id: int
-    name: str
-    spirit: str
-    ingredients: list[str]
+    Built using:
+    - FastAPI
+    - DynamoDB
+    - AWS
+    - Python
 
-dynamodb = boto3.resource(
-    "dynamodb",
-    region_name="ap-southeast-2"
+    Part of my Cloud & AI Engineering learning project.
+    """,
+        version="0.2.0"
 )
 
-table = dynamodb.Table("Cocktails")
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static"
+)
 
-@app.get("/", response_class=HTMLResponse)
-def root():
-    response = table.scan()
-    cocktails = response["Items"]
-    cocktail_count = len(cocktails)
-    cocktail_list = ""
-
-    for cocktail in cocktails:
-        cocktail_list += f"""
-        <li>
-            <a href="/cocktails/{cocktail['id']}">
-                {cocktail['name']}
-            </a>
-        </li>
-        """
-    return f"""
+def render_page(title: str, content: str) -> HTMLResponse:
+    return HTMLResponse(f"""
     <html>
     <head>
-        <title>Tom's Cocktail API</title>
+        <title>{title}</title>
 
         <style>
             body {{
@@ -59,6 +53,28 @@ def root():
                 color: #8B0000;
             }}
 
+            h2 {{
+                color: #555;
+            }}
+
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }}
+
+            th {{
+                background: #8B0000;
+                color: white;
+                padding: 10px;
+                text-align: left;
+            }}
+
+            td {{
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+            }}
+
             a {{
                 text-decoration: none;
                 color: #0066cc;
@@ -67,36 +83,112 @@ def root():
             a:hover {{
                 text-decoration: underline;
             }}
+
+            .button {{
+                display: inline-block;
+                padding: 10px 16px;
+                background: #8B0000;
+                color: white;
+                border-radius: 5px;
+                text-decoration: none;
+            }}
+
+            .button:hover {{
+                background: #a50000;
+            }}
+
+            tr:hover {{
+                background-color: #f8f8f8;
+            }}
+            tr:nth-child(even) {{
+                background-color: #fafafa;
+            }}
+
+            tr:hover {{
+                background-color: #f0f0f0;
+            }}
         </style>
     </head>
+
     <body>
+        <nav style="margin-bottom:20px;">
+            <a href="/">🏠 Home</a> |
+            <a href="/cocktails/html">🍸 Cocktails</a> |
+            <a href="/docs">📚 API Docs</a>
+        </nav>
         <div class="card">
-            <h1>🍸 Tom's Cocktail API</h1>
-
-            <p>
-                A simple REST API built with Python and FastAPI.
-            </p>
-            <p>
-                Currently serving {cocktail_count} cocktails.
-            </p>
-            <h2>Available Cocktails</h2>
-            <ul>
-                {cocktail_list}
-            </ul>
-            <h2>Useful Links</h2>
-
-            <ul>
-                <li><a href="/cocktails">View All Cocktails (JSON)</a></li>
-                <li><a href="/docs">Swagger Documentation</a></li>
-            </ul>
-
-            <p>
-                Running locally on FastAPI 🚀
+            {content}
+            <hr>
+            <p style="font-size:0.9em;color:gray;">
+                Cocktail AI Project • Built with FastAPI • © 2026 Tom Stayner
             </p>
         </div>
     </body>
     </html>
+    """)
+
+class Cocktail(BaseModel):
+    id: int
+    name: str
+    spirit: str
+    ingredients: list[str]
+
+dynamodb = boto3.resource(
+    "dynamodb",
+    region_name="ap-southeast-2"
+)
+
+table = dynamodb.Table("Cocktails")
+
+@app.get("/", response_class=HTMLResponse)
+def root():
+
+    response = table.scan()
+    cocktails = response["Items"]
+    cocktail_count = len(cocktails)
+
+    cocktail_list = ""
+
+    for cocktail in cocktails:
+        cocktail_list += f"""
+        <li>
+            <a href="/cocktails/html/{cocktail['id']}">
+                {cocktail['name']}
+            </a>
+        </li>
+        """
+
+    content = f"""
+    <h1>🍸 Tom's Cocktail API</h1>
+
+    <p>
+        A simple REST API built with Python and FastAPI.
+    </p>
+
+    <p>
+        Currently serving <strong>{cocktail_count}</strong> cocktails.
+    </p>
+
+    <h2>Available Cocktails</h2>
+
+    <ul>
+        {cocktail_list}
+    </ul>
+
+    <h2>Useful Links</h2>
+
+    <ul>
+        <li><a href="/cocktails">View All Cocktails (JSON)</a></li>
+        <li><a href="/cocktails/html">View All Cocktails (HTML)</a></li>
+        <li><a href="/docs">Swagger Documentation</a></li>
+    </ul>
+
+    <p>
+        Running locally on FastAPI 🚀
+    </p>
     """
+
+    return render_page("Tom's Cocktail API", content)
 
 @app.get("/cocktails")
 def get_cocktails():
@@ -104,6 +196,89 @@ def get_cocktails():
     response = table.scan()
 
     return response["Items"]
+
+@app.get("/cocktails/html", response_class=HTMLResponse)
+def cocktails_html():
+
+    response = table.scan()
+
+    rows = ""
+
+    for cocktail in response["Items"]:
+        rows += f"""
+        <tr>
+            <td>{cocktail["id"]}</td>
+            <td>
+                <a href="/cocktails/html/{cocktail["id"]}">
+                    {cocktail["name"]}
+                </a>
+            </td>
+            <td>{cocktail["spirit"]}</td>
+        </tr>
+        """
+
+    content = f"""
+    <h1>🍸 Cocktail Library</h1>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Spirit</th>
+        </tr>
+
+        {rows}
+
+    </table>
+
+    <br>
+
+    <a class="button" href="/">Home</a>
+    """
+
+    return render_page("Cocktails", content)
+
+@app.get("/cocktails/html/{cocktail_id}", response_class=HTMLResponse)
+def cocktail_html(cocktail_id: int):
+
+    response = table.get_item(
+        Key={"id": cocktail_id}
+    )
+
+    item = response.get("Item")
+
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Cocktail not found"
+        )
+
+    ingredients = ""
+
+    for ingredient in item["ingredients"]:
+        ingredients += f"<li>{ingredient}</li>"
+
+    content = f"""
+    <h1>🍸 {item["name"]}</h1>
+
+    <p>
+        <strong>Spirit:</strong> {item["spirit"]}
+    </p>
+
+    <h2>Ingredients</h2>
+
+    <ul>
+        {ingredients}
+    </ul>
+
+    <br>
+
+    <a class="button" href="/cocktails/html">
+        ← Back to Cocktail Library
+    </a>
+    """
+
+    return render_page(item["name"], content)
 
 @app.get("/cocktails/{cocktail_id}")
 def get_cocktail(cocktail_id: int):
