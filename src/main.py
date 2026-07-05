@@ -32,6 +32,7 @@ def render_page(title: str, content: str) -> HTMLResponse:
     <html>
     <head>
         <title>{title}</title>
+        <link rel="stylesheet" href="/static/style.css">
     </head>
 
     <body>
