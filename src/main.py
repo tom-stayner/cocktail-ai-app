@@ -4,6 +4,14 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 from fastapi.staticfiles import StaticFiles
 import boto3
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Tom's Cocktail API",
@@ -65,12 +73,17 @@ dynamodb = boto3.resource(
 
 table = dynamodb.Table("Cocktails")
 
+logger.info("Cocktail API starting")
+logger.info("Connected to DynamoDB table 'Cocktails'")
+
 @app.get("/", response_class=HTMLResponse)
 def root():
 
+    logger.info("[HTML] Rendering home page")
     response = table.scan()
     cocktails = response["Items"]
     cocktail_count = len(cocktails)
+    logger.info(f"[HTML] Rendered home page with {len(cocktails)} cocktails")
 
     cocktail_list = ""
 
@@ -118,14 +131,27 @@ def root():
 @app.get("/cocktails")
 def get_cocktails():
 
-    response = table.scan()
+    logger.info("[API] Retrieving cocktail collection")
 
-    return response["Items"]
+    response = table.scan()
+    cocktails = response["Items"]
+
+    logger.info(
+        f"[API] Returned {len(cocktails)} cocktails"
+    )
+
+    return cocktails
 
 @app.get("/cocktails/html", response_class=HTMLResponse)
 def cocktails_html():
 
+    logger.info("[HTML] Rendering cocktail library")
+
     response = table.scan()
+
+    logger.info(
+        f"[HTML] Rendered cocktail library with {len(response['Items'])} cocktails"
+    )
 
     rows = ""
 
@@ -166,6 +192,8 @@ def cocktails_html():
 @app.get("/cocktails/html/{cocktail_id}", response_class=HTMLResponse)
 def cocktail_html(cocktail_id: int):
 
+    logger.info(f"HTML - Loading cocktail page {cocktail_id}")
+
     response = table.get_item(
         Key={"id": cocktail_id}
     )
@@ -173,10 +201,15 @@ def cocktail_html(cocktail_id: int):
     item = response.get("Item")
 
     if not item:
+        logger.warning(f"HTML - Cocktail {cocktail_id} not found")
         raise HTTPException(
             status_code=404,
-            detail="Cocktail not found"
+            detail="Cocktail not found"            
         )
+    
+    logger.info(
+        f"HTML - Displaying '{item['name']}' (ID {cocktail_id})"
+    )
 
     ingredients = ""
 
@@ -208,6 +241,10 @@ def cocktail_html(cocktail_id: int):
 @app.get("/cocktails/{cocktail_id}")
 def get_cocktail(cocktail_id: int):
 
+    logger.info(
+        f"[API] Retrieving cocktail (ID {cocktail_id})"
+    )
+
     response = table.get_item(
         Key={
             "id": cocktail_id
@@ -217,15 +254,24 @@ def get_cocktail(cocktail_id: int):
     item = response.get("Item")
 
     if not item:
+        logger.warning(f"Cocktail {cocktail_id} not found")
         raise HTTPException(
             status_code=404,
             detail="Cocktail not found"
         )
+    
+    logger.info(
+        f"[API] Served cocktail '{item['name']}' (ID {cocktail_id})"
+    )
 
     return item
 
 @app.post("/cocktails")
 def create_cocktail(cocktail: Cocktail):
+
+    logger.info(
+        f"[API] Creating cocktail '{cocktail.name}' (ID {cocktail.id})"
+    )
 
     table.put_item(
         Item={
@@ -236,12 +282,20 @@ def create_cocktail(cocktail: Cocktail):
         }
     )
 
+    logger.info(
+        f"[API] Created cocktail '{cocktail.name}'"
+    )
+
     return {
         "message": "Cocktail added successfully"
     }
 
 @app.delete("/cocktails/{cocktail_id}")
 def delete_cocktail(cocktail_id: int):
+
+    logger.info(
+        f"[API] Deleting cocktail ID {cocktail_id}"
+    )
 
     response = table.get_item(
         Key={"id": cocktail_id}
@@ -250,6 +304,9 @@ def delete_cocktail(cocktail_id: int):
     item = response.get("Item")
 
     if not item:
+        logger.warning(
+            f"[API] Delete failed - cocktail ID {cocktail_id} not found"
+        )
         raise HTTPException(
             status_code=404,
             detail="Cocktail not found"
@@ -257,6 +314,10 @@ def delete_cocktail(cocktail_id: int):
 
     table.delete_item(
         Key={"id": cocktail_id}
+    )
+
+    logger.info(
+        f"[API] Deleted cocktail '{item['name']}'"
     )
 
     return {
@@ -269,17 +330,24 @@ def update_cocktail(
     cocktail: Cocktail
 ):
 
+    logger.info(
+        f"[API] Updating cocktail ID {cocktail_id}"
+    )
+
     response = table.get_item(
         Key={"id": cocktail_id}
     )
 
     if "Item" not in response:
+        logger.warning(
+            f"[API] Update failed - cocktail ID {cocktail_id} not found"
+        )
         raise HTTPException(
             status_code=404,
             detail="Cocktail not found"
         )
 
-    updated_cocktail = {
+     updated_cocktail = {
         "id": cocktail_id,
         "name": cocktail.name,
         "spirit": cocktail.spirit,
@@ -287,5 +355,9 @@ def update_cocktail(
     }
 
     table.put_item(Item=updated_cocktail)
+
+    logger.info(
+        f"[API] Updated cocktail '{cocktail.name}'"
+    )
 
     return updated_cocktail
