@@ -347,7 +347,7 @@ def update_cocktail(
             detail="Cocktail not found"
         )
 
-     updated_cocktail = {
+    updated_cocktail = {
         "id": cocktail_id,
         "name": cocktail.name,
         "spirit": cocktail.spirit,
