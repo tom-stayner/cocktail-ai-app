@@ -7,19 +7,8 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from fastapi import HTTPException
 from fastapi.staticfiles import StaticFiles
+from src.logging_config import logger
 import boto3
-import logging
-
-# =====================================================
-# Logging Configuration
-# =====================================================
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
-)
-
-logger = logging.getLogger(__name__)
 
 # =====================================================
 # Application Configuration
@@ -128,6 +117,7 @@ logger.info(
 def root() -> HTMLResponse:
 
     logger.info("[HTML] Rendering home page")
+
     response = table.scan()
     cocktails = response["Items"]
     cocktail_count = len(cocktails)

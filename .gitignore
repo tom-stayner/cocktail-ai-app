@@ -17,3 +17,7 @@ __pycache__/
 
 # Windows
 Thumbs.db
+
+# Logs
+logs/*
+!logs/.gitkeep
