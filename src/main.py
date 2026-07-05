@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from fastapi import HTTPException
+import boto3
 
 app = FastAPI()
 
@@ -10,42 +12,28 @@ class Cocktail(BaseModel):
     spirit: str
     ingredients: list[str]
 
-cocktails =    [
-        {
-            "id": 1,
-            "name": "Old Fashioned",
-            "spirit": "Bourbon",
-            "ingredients": [
-                "60ml Bourbon",
-                "1 Sugar Cube",
-                "2 Dashes Angostura Bitters"
-            ]
-        },
-        {
-            "id": 2,
-            "name": "Negroni",
-            "spirit": "Gin",
-            "ingredients": [
-                "30ml Gin",
-                "30ml Campari",
-                "30ml Sweet Vermouth"
-            ]
-        },
-        {
-            "id": 3,
-            "name": "Margarita",
-            "spirit": "Tequila",
-            "ingredients": [
-                "50ml Tequila",
-                "25ml Triple Sec",
-                "25ml Lime Juice"
-            ]
-        }
-    ]
+dynamodb = boto3.resource(
+    "dynamodb",
+    region_name="ap-southeast-2"
+)
+
+table = dynamodb.Table("Cocktails")
 
 @app.get("/", response_class=HTMLResponse)
 def root():
+    response = table.scan()
+    cocktails = response["Items"]
     cocktail_count = len(cocktails)
+    cocktail_list = ""
+
+    for cocktail in cocktails:
+        cocktail_list += f"""
+        <li>
+            <a href="/cocktails/{cocktail['id']}">
+                {cocktail['name']}
+            </a>
+        </li>
+        """
     return f"""
     <html>
     <head>
@@ -54,14 +42,30 @@ def root():
         <style>
             body {{
                 font-family: Arial, sans-serif;
+                max-width: 900px;
+                margin: auto;
+                padding: 40px;
+                background-color: #f5f5f5;
+            }}
+
+            .card {{
+                background: white;
+                padding: 25px;
+                border-radius: 10px;
+                box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
             }}
 
             h1 {{
                 color: #8B0000;
             }}
 
-            .card {{
-                background: white;
+            a {{
+                text-decoration: none;
+                color: #0066cc;
+            }}
+
+            a:hover {{
+                text-decoration: underline;
             }}
         </style>
     </head>
@@ -75,10 +79,14 @@ def root():
             <p>
                 Currently serving {cocktail_count} cocktails.
             </p>
-            <h2>Available Endpoints</h2>
+            <h2>Available Cocktails</h2>
+            <ul>
+                {cocktail_list}
+            </ul>
+            <h2>Useful Links</h2>
 
             <ul>
-                <li><a href="/cocktails">GET /cocktails</a></li>
+                <li><a href="/cocktails">View All Cocktails (JSON)</a></li>
                 <li><a href="/docs">Swagger Documentation</a></li>
             </ul>
 
@@ -92,23 +100,92 @@ def root():
 
 @app.get("/cocktails")
 def get_cocktails():
-    return cocktails
+
+    response = table.scan()
+
+    return response["Items"]
 
 @app.get("/cocktails/{cocktail_id}")
 def get_cocktail(cocktail_id: int):
 
-    for cocktail in cocktails:
-        if cocktail["id"] == cocktail_id:
-            return cocktail
+    response = table.get_item(
+        Key={
+            "id": cocktail_id
+        }
+    )
 
-    return {"error": "Cocktail not found"}
+    item = response.get("Item")
+
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Cocktail not found"
+        )
+
+    return item
 
 @app.post("/cocktails")
 def create_cocktail(cocktail: Cocktail):
 
-    cocktails.append(cocktail.dict())
+    table.put_item(
+        Item={
+            "id": cocktail.id,
+            "name": cocktail.name,
+            "spirit": cocktail.spirit,
+            "ingredients": cocktail.ingredients
+        }
+    )
 
     return {
-        "message": "Cocktail added successfully",
-        "cocktail": cocktail
+        "message": "Cocktail added successfully"
     }
+
+@app.delete("/cocktails/{cocktail_id}")
+def delete_cocktail(cocktail_id: int):
+
+    response = table.get_item(
+        Key={"id": cocktail_id}
+    )
+
+    item = response.get("Item")
+
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Cocktail not found"
+        )
+
+    table.delete_item(
+        Key={"id": cocktail_id}
+    )
+
+    return {
+        "message": f"Cocktail {cocktail_id} deleted"
+    }
+
+@app.put("/cocktails/{cocktail_id}")
+def update_cocktail(
+    cocktail_id: int,
+    cocktail: Cocktail
+):
+
+    response = table.get_item(
+        Key={"id": cocktail_id}
+    )
+
+    if "Item" not in response:
+        raise HTTPException(
+            status_code=404,
+            detail="Cocktail not found"
+        )
+
+    updated_cocktail = {
+        "id": cocktail_id,
+        "name": cocktail.name,
+        "spirit": cocktail.spirit,
+        "ingredients": cocktail.ingredients
+    }
+
+    table.put_item(Item=updated_cocktail)
+
+    return updated_cocktail
