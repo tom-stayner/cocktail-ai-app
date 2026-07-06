@@ -52,16 +52,32 @@ This project is under active development as part of my Cloud & AI Engineering le
 - HTML web interface
 - Project modularisation and code refactoring
 
-### Planned Enhancements
+## Planned Enhancements
+
+### Architecture & Quality
+
+- Service layer architecture
+- Environment-based configuration
+- Improved exception and error handling
+- Automated testing with pytest
+
+### Deployment
 
 - Docker support
 - AWS cloud deployment
 - CI/CD pipeline
+
+### Media Management
+
+- Store cocktail images in Amazon S3
+- Upload images from the web interface
+- Display images on cocktail pages
+- Generate image thumbnails
+- Validate uploaded image types and sizes
+
+### AI Features
+
 - AI-powered cocktail recommendations
-- Automated testing with pytest
-- Improved exception and error handling
-- Environment-based configuration
-- Service layer architecture
 
 ---
 
