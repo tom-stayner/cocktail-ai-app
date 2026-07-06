@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-
+from src.models import Cocktail
 from src.database import table
 from src.logging_config import logger
 
@@ -69,16 +69,6 @@ def render_page(title: str, content: str) -> HTMLResponse:
     </body>
     </html>
     """)
-
-# =====================================================
-# Data Models
-# =====================================================
-
-class Cocktail(BaseModel):
-    id: int
-    name: str
-    spirit: str
-    ingredients: list[str]
 
 # =====================================================
 # Application Initialization
