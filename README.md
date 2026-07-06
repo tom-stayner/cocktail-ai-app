@@ -1,3 +1,16 @@
+## Project Status
+
+🚧 Currently under active development.
+
+This project is part of my Cloud & AI Engineering learning journey alongside my other Cloud Development courses/learnings to put into practice what i'm picking up.
+
+Upcoming work includes:
+
+- Docker support
+- AWS deployment
+- CI/CD
+- AI-powered cocktail recommendations
+
 Cocktail AI Application
     How to Run the Application
         Open Visual Studio Code.
