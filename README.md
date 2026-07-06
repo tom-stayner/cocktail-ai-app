@@ -2,7 +2,7 @@
 
 🚧 Currently under active development.
 
-This project is part of my Cloud & AI Engineering learning journey alongside my other Cloud Development courses/learnings to put into practice what i'm picking up.
+This personal project is part of my Cloud & AI Engineering learning journey to put into practice my Cloud Development learnings.
 
 Upcoming work includes:
 
