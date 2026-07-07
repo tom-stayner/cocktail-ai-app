@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from src.models import Cocktail
 from src.database import table
 from src.logging_config import logger
+from src.services import cocktail_service
 
 # =====================================================
 # FastAPI Application
@@ -247,8 +248,7 @@ def get_cocktails() -> list:
 
     logger.info("[API] Retrieving cocktail collection")
 
-    response = table.scan()
-    cocktails = response["Items"]
+    cocktails = cocktail_service.get_all_cocktails()
 
     logger.info(
         f"[API] Returned {len(cocktails)} cocktails"
@@ -263,28 +263,7 @@ def get_cocktail(cocktail_id: int) -> dict:
         f"[API] Retrieving cocktail (ID {cocktail_id})"
     )
 
-    response = table.get_item(
-        Key={
-            "id": cocktail_id
-        }
-    )
-
-    item = response.get("Item")
-
-    if not item:
-        logger.warning(
-            f"[API] Cocktail ID {cocktail_id} not found"
-        )
-        raise HTTPException(
-            status_code=404,
-            detail="Cocktail not found"
-        )
-    
-    logger.info(
-        f"[API] Served cocktail '{item['name']}' (ID {cocktail_id})"
-    )
-
-    return item
+    return cocktail_service.get_cocktail(cocktail_id)
 
 @app.post("/cocktails")
 def create_cocktail(cocktail: Cocktail) -> dict:
