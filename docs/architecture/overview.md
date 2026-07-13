@@ -1,4 +1,5 @@
 # Cocktail AI App
+by Tom Stayner
 
 ## Overview
 
