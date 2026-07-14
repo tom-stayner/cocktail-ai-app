@@ -29,6 +29,7 @@ and this project follows
 ### Changed
 
 - Reorganised documentation and repaired internal navigation after file moves.
+- Routed all HTML cocktail views through the service layer, removing direct DynamoDB access from route handlers.
 
 ---
 

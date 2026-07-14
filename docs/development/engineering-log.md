@@ -58,3 +58,11 @@ Changes should be infrequent and only made when repeated engineering experience 
 ## Notes
 
 The project remains intentionally simple at this stage while the architecture is being established for future cloud and AI expansion.
+
+---
+
+## 2026-07-14 - Service-Layer Completion
+
+- Removed direct DynamoDB access from HTML route handlers.
+- Reused the existing collection and single-cocktail service operations to preserve CRUD behaviour and avoid duplicate data-access logic.
+- Added regression tests covering the HTML routes' use of the service layer.

@@ -8,7 +8,6 @@ from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.database import table
 from src.logging_config import logger
 from src.models import Cocktail
 from src.services import cocktail_service
@@ -103,8 +102,7 @@ def root() -> HTMLResponse:
 
     logger.info("[HTML] Rendering home page")
 
-    response = table.scan()
-    cocktails = response["Items"]
+    cocktails = cocktail_service.get_all_cocktails()
     cocktail_count = len(cocktails)
     logger.info(
         f"[HTML] Rendered home page with {cocktail_count} cocktails"
@@ -158,9 +156,7 @@ def cocktails_html() -> HTMLResponse:
 
     logger.info("[HTML] Rendering cocktail library")
 
-    response = table.scan()
-
-    cocktails = response["Items"]
+    cocktails = cocktail_service.get_all_cocktails()
     cocktail_count = len(cocktails)
 
     logger.info(
@@ -210,20 +206,13 @@ def cocktail_html(cocktail_id: int) -> HTMLResponse:
         f"[HTML] Rendering cocktail page (ID {cocktail_id})"
     )
 
-    response = table.get_item(
-        Key={"id": cocktail_id}
-    )
-
-    item = response.get("Item")
-
-    if not item:
+    try:
+        item = cocktail_service.get_cocktail(cocktail_id)
+    except HTTPException:
         logger.warning(
             f"[HTML] Cocktail ID {cocktail_id} not found"
         )
-        raise HTTPException(
-            status_code=404,
-            detail="Cocktail not found"            
-        )
+        raise
     
     logger.info(
         f"[HTML] Rendered cocktail '{item['name']}' (ID {cocktail_id})"
