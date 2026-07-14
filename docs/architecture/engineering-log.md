@@ -48,7 +48,7 @@ Changes should be infrequent and only made when repeated engineering experience 
 
 ---
 
-## 2026-07-14
+## 2026-07-14 - Health endpoint and Regression Tests (Version 1.0)
 
 - Added a health endpoint for basic service monitoring.
 - Moved cocktail CRUD logic behind a service layer to improve separation of concerns.
