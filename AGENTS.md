@@ -75,8 +75,8 @@ Avoid unnecessary documentation churn.
 
 For significant changes:
 
-1. Review the current implementation.
-2. Identify affected components.
+1. Review the current implementation and existing documentation.
+2. Identify affected code, tests, documentation and configuration.
 3. Produce a brief implementation plan.
 4. Implement the change.
 5. Update affected documentation.
@@ -95,6 +95,7 @@ Before completing a task:
 - Logging and error handling have been considered.
 - The implementation is consistent with the project architecture.
 - Summarize the changes and any important design decisions.
+- No unnecessary duplication has been introduced.
 
 ---
 
@@ -107,3 +108,20 @@ Do not create documentation unless it adds value.
 Prefer improving existing files over creating new ones.
 
 Avoid speculative architecture that is not justified by current or planned requirements.
+
+---
+
+## Project Scope Awareness
+
+This project is intended to demonstrate professional software engineering.
+
+When making changes, consider whether the request affects:
+
+- architecture
+- documentation
+- deployment
+- testing
+- cloud infrastructure
+- AI integration
+
+Think beyond the immediate file being modified.

@@ -4,6 +4,7 @@
 
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -51,6 +52,7 @@ def render_page(title: str, content: str) -> HTMLResponse:
     <html>
     <head>
         <title>{title}</title>
+        <link rel="icon" href="/favicon.ico" type="image/svg+xml">
         <link rel="stylesheet" href="/static/main.css">
     </head>
 
@@ -80,6 +82,13 @@ logger.info("[SYSTEM] Cocktail API starting")
 # =====================================================
 # API Health and HTML Routes
 # =====================================================
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    """Serve the application favicon at the conventional browser URL."""
+
+    return FileResponse("static/favicon.svg", media_type="image/svg+xml")
+
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
