@@ -19,7 +19,6 @@ and this project follows
 - Public GitHub repository.
 - `.env.example` configuration template.
 - Browser favicon served at `/favicon.ico`.
-- Added `docs/development/ai-development-workflow.md` documenting the project's AI-assisted software engineering workflow and team responsibilities.
 
 ### Changed
 - Refactored the application from a single-file implementation towards a modular architecture.
@@ -40,6 +39,7 @@ and this project follows
 - Added architecture documentation.
 - Added project roadmap.
 - Improved setup instructions.
+- Added `docs/development/ai-development-workflow.md` documenting the project's AI-assisted software engineering workflow and team responsibilities.
 
 ---
 
