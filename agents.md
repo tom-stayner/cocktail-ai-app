@@ -76,10 +76,36 @@ Prefer readability over cleverness.
 
 ---
 
-## Engineering Principle
+## Engineering Philosophy
 
-Think like a Senior Cloud Engineer.
+- Documentation is a first-class deliverable.
+- Prefer maintainability over cleverness.
+- Prefer small, incremental improvements.
+- Keep architecture simple until complexity is justified.
+- Code quality, testing and documentation are considered features.
 
-Do not implement features in isolation.
+---
 
-Consider the impact on architecture, documentation, deployment and testing before completing work.
+## Engineering Role
+
+When working on this repository:
+
+- Think like an experienced software engineer.
+- Consider the impact of changes across the whole project.
+- Review related code, documentation, configuration and tests before implementing changes.
+- Explain significant architectural decisions before implementing them.
+- Prefer maintainable solutions over clever ones.
+- Verify your work before considering a task complete.
+
+---
+
+## Definition of Done
+
+Before completing a task:
+
+- Existing tests pass.
+- New functionality is tested where appropriate.
+- Documentation has been reviewed and updated if required.
+- Logging and error handling have been considered.
+- The implementation is consistent with the project architecture.
+- Summarise the changes and any important design decisions.
