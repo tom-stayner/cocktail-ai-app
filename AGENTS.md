@@ -131,3 +131,16 @@ When implementing a completed feature:
 - Update setup.md if installation or configuration changes.
 - Keep README concise; avoid duplicating detailed documentation.
 - When documentation files are moved or renamed, update all inbound and outbound Markdown links and verify that local documentation links resolve.
+
+---
+
+## Release Management
+
+When preparing a project release:
+
+- Update the application version.
+- Record completed work in the changelog.
+- Ensure roadmap milestones are accurate.
+- Update version and last-updated metadata on all affected Current Implementation diagrams.
+- Verify documentation continues to distinguish Current Implementation from Future Direction.
+- Ensure documentation and source code remain aligned before release.
