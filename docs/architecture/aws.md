@@ -22,7 +22,12 @@ The repository keeps the AWS design intentionally lightweight at this stage so t
 
 See [deployment.md](deployment.md) for the current operating model and the [product roadmap](../roadmap.md) for planned milestones.
 
-## AWS Architecture Diagram
+## Future Architecture Diagram
+
+This conceptual diagram illustrates services that may form part of a future AWS deployment. It does not describe the current local implementation.
+
+- **Status:** Planned Architecture
+- **Target:** Future Release
 
 ```mermaid
 flowchart LR

@@ -7,8 +7,6 @@ The format is based on the principles of
 and this project follows
 [Semantic Versioning](https://semver.org/).
 
----
-
 ## [0.3.0] - 2026-07-14
 
 ### Added
@@ -27,6 +25,9 @@ and this project follows
 - Reorganised project documentation into a structured `docs/` hierarchy.
 - Repaired internal documentation navigation following the documentation restructure.
 - Improved README to serve as a concise project landing page.
+- Clarified current and future architecture diagrams to avoid presenting planned AWS services or data structures as implemented.
+- Added status and release metadata to Mermaid diagrams.
+- Refined the AI-assisted development workflow and documented the current status of formatting and linting tools.
 
 ### Infrastructure
 - AWS DynamoDB configuration isolated into a dedicated database module.

@@ -13,6 +13,10 @@ The project is currently a Python FastAPI application with:
 
 ## Current Architecture Diagram
 
+- **Status:** Current Implementation
+- **Version:** 0.3.0
+- **Last Updated:** 2026-07-14
+
 ```mermaid
 flowchart TD
 
@@ -36,6 +40,9 @@ flowchart TD
 The long-term direction is a cloud-native, AWS-based application with AI-assisted features. The current implementation is intentionally small and local-first so the core architecture can evolve without unnecessary complexity.
 
 ## Future Architecture
+
+- **Status:** Planned Architecture
+- **Target:** Future Release
 
 ```mermaid
 flowchart TD
@@ -63,6 +70,10 @@ Image --> S3["Amazon S3"]
 
 ## Project Structure
 
+- **Status:** Current Implementation
+- **Version:** 0.3.0
+- **Last Updated:** 2026-07-14
+
 ```mermaid
 flowchart LR
 
@@ -89,6 +100,7 @@ services --> cocktail["cocktail_service.py"]
 - [Deployment](deployment.md): current local operating model and deployment milestone
 - [Data model](data-model.md): persisted cocktail record shape
 - [Product roadmap](../roadmap.md): planned evolution
+- [AI-assisted development workflow](../development/ai-development-workflow.md): collaboration roles and supporting tools
 - [Engineering log](../development/engineering-log.md): significant implementation history and decisions
 
 For setup and project-wide delivery standards, see the [setup guide](../setup.md) and [coding standards](../development/coding-standards.md).

@@ -35,7 +35,7 @@ Additional project documentation can be found in the `docs/` directory.
 - [Architecture Overview](docs/architecture/overview.md)
 - [Coding Standards](docs/development/coding-standards.md)
 - [Engineering Log](docs/development/engineering-log.md)
-- [Development Workflow](docs/development/ai-development-workflow.md)
+- [AI-Assisted Development Workflow](docs/development/ai-development-workflow.md)
 - [Changelog](docs/development/changelog.md)
 
 Repository engineering governance is defined in [AGENTS.md](AGENTS.md).

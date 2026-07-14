@@ -1,74 +1,43 @@
-# Development Workflow
+# AI-Assisted Development Workflow
 
-This project is developed using an AI-assisted software engineering workflow.
+## Purpose
 
-AI tools are used to assist with architecture, implementation, documentation and testing, while all product direction, design decisions, code review and final approval remain the responsibility of the project owner.
+This document describes the collaboration roles used for AI-assisted engineering in this repository. [AGENTS.md](../../AGENTS.md) remains the source of truth for engineering governance, delivery workflow, and approval requirements.
 
 ## Roles and Responsibilities
 
-### Human
-
 | Role | Responsibility |
 |------|----------------|
-| **Tom Stayner** | Product Owner, Engineering Lead, Final Reviewer |
+| **Tom Stayner** | Product owner, engineering lead, and final reviewer |
+| **ChatGPT** | Architecture discussion, technical mentoring, documentation, and design review support |
+| **Codex** | Implementation, refactoring, test development, and documentation maintenance |
 
-### AI Assistants
+## Engineering Tools
 
-| Role | Responsibility |
-|------|----------------|
-| **ChatGPT** | Software Architecture, Technical Mentoring, Documentation, Design Reviews |
-| **Codex** | Feature Implementation, Refactoring, Test Development, Documentation Maintenance |
+| Tool | Current use |
+|------|-------------|
+| **GitHub** | Version control, issues, discussions, and releases |
+| **Pytest** | Regression verification |
+| **Ruff / Black** | Installed development tools; automated enforcement is not yet configured |
 
-### Engineering Tools
+## Collaboration Loop
 
-| Tool | Responsibility |
-|------|----------------|
-| **GitHub** | Version Control, Issues, Discussions, Releases |
-| **Pytest** | Regression Verification |
-| **Ruff / Black** | Static Analysis, Code Formatting and Style Enforcement |
-
-## Development Feedback Loop Diagram
+- **Status:** Current Development Workflow
+- **Version:** 0.3.0
+- **Last Updated:** 2026-07-14
 
 ```mermaid
 flowchart LR
-
-    PO["Tom<br/>Product Owner"]
-
-    ARCH["ChatGPT<br/>Architecture & Design"]
-
-    ENG["Codex<br/>Implementation"]
-
-    TEST["Testing & Review"]
-
-    GIT["Git Commit & Release"]
-
-    PO --> ARCH
-    ARCH --> ENG
-    ENG --> TEST
-    TEST --> PO
-    PO --> GIT
+    PO["Product Owner"] --> ARCH["Architecture and Design"]
+    ARCH --> ENG["Implementation"]
+    ENG --> REVIEW["Testing and Review"]
+    REVIEW --> PO
+    PO --> RELEASE["Commit and Release"]
 ```
 
-## Development Principles
+## Related Documentation
 
-- The Product Owner defines requirements and priorities.
-- Architectural decisions are discussed before implementation.
-- Features are implemented incrementally.
-- All code changes are reviewed before being committed.
-- Documentation is maintained alongside source code.
-- Architectural decisions are recorded in the Engineering Log.
-- User-visible changes are recorded in the Changelog.
-
-## AI-Assisted Development
-
-AI is used as an engineering assistant rather than an autonomous developer.
-
-Responsibilities include:
-
-- brainstorming solutions
-- reviewing architecture
-- generating implementation suggestions
-- assisting with documentation
-- proposing tests
-
-Final technical decisions remain the responsibility of the project owner.
+- [Engineering governance](../../AGENTS.md)
+- [Coding standards](coding-standards.md)
+- [Engineering log](engineering-log.md)
+- [Changelog](changelog.md)

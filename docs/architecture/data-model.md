@@ -26,7 +26,11 @@ The model can evolve to include fields such as:
 
 See the [architecture overview](overview.md) for component responsibilities and the [product roadmap](../roadmap.md) for planned product evolution.
 
-## Data Model Diagram
+## Current Data Model Diagram
+
+- **Status:** Current Implementation
+- **Version:** 0.3.0
+- **Last Updated:** 2026-07-14
 
 ```mermaid
 erDiagram
@@ -35,11 +39,6 @@ COCKTAIL {
     int id
     string name
     string spirit
+    string_array ingredients
 }
-
-INGREDIENT {
-    string name
-}
-
-COCKTAIL ||--o{ INGREDIENT : contains
 ```
