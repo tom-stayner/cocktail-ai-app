@@ -216,3 +216,19 @@ If supported by future GitHub connector capabilities, this workflow will become 
 | Date | Change |
 |------|--------|
 | 2026-07-14 | Initial document created. |
+
+---
+
+# Lessons Learned
+
+This document should also capture lessons learned about using AI-assisted software development.
+
+Examples include:
+
+- Successful engineering workflows.
+- GitHub connector capabilities.
+- AI review processes.
+- Documentation practices.
+- Development patterns that improve productivity.
+
+These lessons are intended to improve both the Cocktail AI App and future software projects.
