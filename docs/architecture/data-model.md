@@ -25,3 +25,21 @@ The model can evolve to include fields such as:
 - pairing suggestions
 
 See the [architecture overview](overview.md) for component responsibilities and the [product roadmap](../roadmap.md) for planned product evolution.
+
+## Data Model Diagram
+
+```mermaid
+erDiagram
+
+COCKTAIL {
+    int id
+    string name
+    string spirit
+}
+
+INGREDIENT {
+    string name
+}
+
+COCKTAIL ||--o{ INGREDIENT : contains
+```

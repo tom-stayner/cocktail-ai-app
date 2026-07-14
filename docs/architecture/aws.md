@@ -21,3 +21,29 @@ A future version is expected to use:
 The repository keeps the AWS design intentionally lightweight at this stage so the implementation remains easy to evolve.
 
 See [deployment.md](deployment.md) for the current operating model and the [product roadmap](../roadmap.md) for planned milestones.
+
+## AWS Architecture Diagram
+
+```mermaid
+flowchart LR
+
+Browser
+
+Browser --> FastAPI
+
+FastAPI --> DynamoDB
+
+FastAPI --> S3
+
+FastAPI --> Secrets
+
+FastAPI --> CloudWatch
+
+Secrets["AWS Secrets Manager"]
+
+CloudWatch["CloudWatch Logs"]
+
+DynamoDB["Amazon DynamoDB"]
+
+S3["Amazon S3"]
+```

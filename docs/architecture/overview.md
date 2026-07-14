@@ -11,7 +11,7 @@ The project is currently a Python FastAPI application with:
 - DynamoDB as the persistence layer, configured through `AWS_REGION` and `TABLE_NAME`
 - static CSS and a browser favicon served by the application
 
-## Architecture Diagram
+## Current Architecture Diagram
 
 ```mermaid
 flowchart TD
@@ -34,6 +34,47 @@ flowchart TD
 ## Future Direction
 
 The long-term direction is a cloud-native, AWS-based application with AI-assisted features. The current implementation is intentionally small and local-first so the core architecture can evolve without unnecessary complexity.
+
+## Future Architecture
+
+```mermaid
+flowchart TD
+
+Browser["🌐 Browser"]
+
+Browser --> FastAPI
+
+FastAPI --> Cocktail["Cocktail Service"]
+FastAPI --> Insight["Insights Service"]
+FastAPI --> AI["AI Service"]
+FastAPI --> Image["Image Service"]
+
+Cocktail --> Database
+Insight --> Database
+AI --> Database
+Image --> S3
+
+Database --> DynamoDB
+
+AI --> OpenAI["OpenAI API"]
+
+Image --> S3["Amazon S3"]
+```
+
+## Project Structure
+
+```mermaid
+flowchart LR
+
+main["main.py"]
+
+main --> services["services/"]
+main --> models["models.py"]
+main --> logging["logging_config.py"]
+main --> database["database.py"]
+
+services --> cocktail["cocktail_service.py"]
+```
 
 ## Main Components
 
