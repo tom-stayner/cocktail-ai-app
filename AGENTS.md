@@ -10,15 +10,26 @@ Code quality, maintainability, and documentation are considered features.
 
 ---
 
-## Primary Responsibilities
+## Engineering Philosophy
 
-When implementing features:
+- Documentation is a first-class deliverable.
+- Prefer maintainability over cleverness.
+- Prefer small, incremental improvements.
+- Keep architecture simple until complexity is justified.
+- Code quality, testing and documentation are considered features.
 
-- Write maintainable code.
-- Keep documentation synchronized.
-- Preserve architectural consistency.
-- Prefer small incremental improvements.
-- Explain significant design decisions.
+---
+
+## Engineering Role
+
+When working on this repository:
+
+- Think like an experienced software engineer.
+- Consider the impact of changes across the whole project.
+- Review related code, documentation, configuration, and tests before implementing changes.
+- Explain significant architectural decisions before implementing them.
+- Prefer maintainable solutions over clever ones.
+- Verify your work before considering a task complete.
 
 ---
 
@@ -60,26 +71,17 @@ Avoid unnecessary documentation churn.
 
 ---
 
-## Engineering Philosophy
+## Engineering Workflow
 
-- Documentation is a first-class deliverable.
-- Prefer maintainability over cleverness.
-- Prefer small, incremental improvements.
-- Keep architecture simple until complexity is justified.
-- Code quality, testing and documentation are considered features.
+For significant changes:
 
----
-
-## Engineering Role
-
-When working on this repository:
-
-- Think like an experienced software engineer.
-- Consider the impact of changes across the whole project.
-- Review related code, documentation, configuration, and tests before implementing changes.
-- Explain significant architectural decisions before implementing them.
-- Prefer maintainable solutions over clever ones.
-- Verify your work before considering a task complete.
+1. Review the current implementation.
+2. Identify affected components.
+3. Produce a brief implementation plan.
+4. Implement the change.
+5. Update affected documentation.
+6. Verify the implementation.
+7. Summarise the work completed.
 
 ---
 
@@ -93,20 +95,6 @@ Before completing a task:
 - Logging and error handling have been considered.
 - The implementation is consistent with the project architecture.
 - Summarize the changes and any important design decisions.
-
----
-
-## Engineering Workflow
-
-For significant changes:
-
-1. Review the current implementation.
-2. Identify affected components.
-3. Produce a brief implementation plan.
-4. Implement the change.
-5. Update affected documentation.
-6. Verify the implementation.
-7. Summarise the work completed.
 
 ---
 
