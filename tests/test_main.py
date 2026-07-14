@@ -13,6 +13,13 @@ def test_health_endpoint_returns_ok(monkeypatch):
     assert response.json() == {"status": "ok"}
 
 
+def test_openapi_version_matches_current_release():
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    assert response.json()["info"]["version"] == "0.3.0"
+
+
 def test_favicon_is_served_at_conventional_browser_url():
     response = client.get("/favicon.ico")
 
