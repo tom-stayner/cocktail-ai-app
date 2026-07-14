@@ -11,17 +11,6 @@ and this project follows
 
 ## [Unreleased]
 
-### Planned
-
-- Configuration validation and configurable logging
-- Expanded API and service-layer regression coverage
-- Improved exception handling
-- Docker support
-- AWS deployment
-- Amazon S3 image management
-- Insights and analytics dashboard
-- AI-powered cocktail recommendations
-
 ### Added
 
 - Browser favicon served at `/favicon.ico`.
