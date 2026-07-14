@@ -1,5 +1,28 @@
 # Engineering Log
 
+## 2026-07-14
+
+### Documented AI-Assisted Development Workflow
+
+#### Decision
+
+Introduced `docs/development/ai-development-workflow.md` to formally document the project's AI-assisted software engineering process.
+
+#### Reason
+
+As the project evolved, AI tools became integrated into the engineering workflow rather than being used solely for code generation. Different tools naturally assumed specialised roles:
+
+- Product Owner and Engineering Lead
+- Software Architect
+- Software Engineer
+- Engineering Tooling
+
+Documenting these responsibilities provides transparency into how architectural decisions are made, how implementations are reviewed, and how quality is maintained.
+
+#### Outcome
+
+The repository now documents not only the application's architecture, but also the engineering workflow used to develop it, providing future contributors with a clear understanding of the project's development methodology.
+
 ## 2026-07-14 — Repository Engineering Constitution (Version 1.0)
 
 ### Summary
