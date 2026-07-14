@@ -1,6 +1,6 @@
 # 🍸 Cocktail AI App
 
-A cloud-native cocktail recipe application built with **Python**, **FastAPI**, and **AWS DynamoDB**.
+A cocktail recipe application built with **Python**, **FastAPI**, and **AWS DynamoDB**. It currently runs locally and connects to a configured DynamoDB table.
 
 This project forms part of my **Cloud & AI Engineering** learning journey and is designed to put cloud development concepts into practice while building a real-world application.
 
@@ -40,41 +40,7 @@ For a concise architecture overview, see [docs/architecture/overview.md](docs/ar
 
 This project is under active development as part of my Cloud & AI Engineering learning journey.
 
-### Current Focus
-
-- REST API development with FastAPI
-- AWS DynamoDB integration
-- Structured logging
-- HTML web interface
-- Project modularisation and code refactoring
-
-## Planned Enhancements
-
-### Architecture & Quality
-
-- Service layer architecture
-- Environment-based configuration
-- Improved exception and error handling
-- Automated testing with pytest
-- Deployment health checks and observability
-
-### Deployment
-
-- Docker support
-- AWS cloud deployment
-- CI/CD pipeline
-
-### Media Management
-
-- Store cocktail images in Amazon S3
-- Upload images from the web interface
-- Display images on cocktail pages
-- Generate image thumbnails
-- Validate uploaded image types and sizes
-
-### AI Features
-
-- AI-powered cocktail recommendations
+The current focus is strengthening the maintainable backend foundation. See the [roadmap](docs/architecture/roadmap.md) for planned work.
 
 ---
 
@@ -113,14 +79,13 @@ pip install -r requirements.txt
 
 ## 4. Configure the Application
 
-Create a `.env` file in the project root.
+Create a `.env` file in the project root with the AWS Region and DynamoDB table name.
 
 Example:
 
 ```text
 AWS_REGION=ap-southeast-2
 TABLE_NAME=Cocktails
-LOG_LEVEL=INFO
 ```
 
 Or copy the provided template.
@@ -143,7 +108,7 @@ cp .env.example .env
 uvicorn src.main:app --reload
 ```
 
-> `python src/main.py` can be useful for simple testing, however the application is intended to be run using Uvicorn.
+> The application is intended to be run using Uvicorn. For detailed local setup and AWS credential requirements, see [docs/setup.md](docs/setup.md).
 
 ## 6. Open Your Browser
 
@@ -165,7 +130,7 @@ http://localhost:8000/docs
 
 - Python 3.14+
 - Activated virtual environment
-- AWS credentials configured locally
+- AWS credentials available through the standard AWS credential provider chain
 - Access to the DynamoDB table
 - `app = FastAPI()` defined in `src/main.py`
 
@@ -191,7 +156,7 @@ Connection information is supplied through environment variables and is **not** 
 |----------|-------------|---------|
 | `AWS_REGION` | AWS region containing the DynamoDB table | `ap-southeast-2` |
 | `TABLE_NAME` | DynamoDB table name | `Cocktails` |
-| `LOG_LEVEL` | Application logging level | `INFO` |
+| `LOG_LEVEL` | Reserved for future configurable logging; not read by the current application | `INFO` |
 
 ---
 
@@ -206,10 +171,12 @@ Connection information is supplied through environment variables and is **not** 
 
 ## Documentation
 
-- [docs/setup.md](docs/setup.md) for local setup steps
+- [docs/setup.md](docs/setup.md) for detailed local setup
+- [docs/project-standards.md](docs/project-standards.md) for the project delivery checklist
 - [docs/architecture/overview.md](docs/architecture/overview.md) for the current architecture
 - [docs/architecture/aws.md](docs/architecture/aws.md) for AWS-related notes
 - [docs/architecture/deployment.md](docs/architecture/deployment.md) for deployment status
 - [docs/architecture/data-model.md](docs/architecture/data-model.md) for the current data model
 - [docs/architecture/roadmap.md](docs/architecture/roadmap.md) for planned work
 - [docs/architecture/engineering-log.md](docs/architecture/engineering-log.md) for implementation notes
+- [docs/architecture/chatgpt-integration.md](docs/architecture/chatgpt-integration.md) for the AI-assisted engineering workflow

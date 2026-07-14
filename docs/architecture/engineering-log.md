@@ -4,13 +4,13 @@
 
 ### Summary
 
-Introduced and refined `AGENTS.md` as the repository's Engineering Constitution to establish consistent engineering practices for AI-assisted development.
+Established `AGENTS.md` as the repository's Engineering Constitution: the durable source of engineering principles and governance for AI-assisted development.
 
 ### Why
 
 The project will be developed collaboratively using AI coding agents (Codex) alongside human architectural oversight.
 
-Rather than relying on detailed prompts for every task, the repository now defines stable engineering principles that guide implementation, documentation, testing and verification.
+Rather than relying on detailed prompts for every task, the repository now defines stable principles for implementation, documentation, testing and verification. This gives human and AI contributors a shared basis for making consistent engineering decisions as the project evolves.
 
 ### Decisions
 
@@ -18,12 +18,14 @@ Rather than relying on detailed prompts for every task, the repository now defin
 - Defined a lightweight engineering workflow based on:
   - Review
   - Plan
+  - Approval for architectural or structural changes
   - Implement
   - Verify
   - Summarise
 - Introduced a Definition of Done for engineering tasks.
-- Established repository governance so that AI agents recommend, rather than directly modify, `AGENTS.md`.
-- Simplified the document to focus on engineering behaviour rather than project-specific implementation details.
+- Set documentation governance: distinguish current implementation from future direction and avoid presenting planned work as delivered.
+- Established controlled evolution of the Constitution: agents recommend reusable improvements, and changes require explicit approval.
+- Kept the Constitution focused on enduring engineering behaviour rather than feature-specific implementation detail.
 
 ### Outcomes
 
@@ -32,8 +34,10 @@ AI-assisted development should now consistently:
 - Consider the wider impact of changes.
 - Review documentation alongside implementation.
 - Produce implementation plans before significant work.
+- Seek approval before making architectural or structural changes.
 - Verify changes before completion.
-- Summarise engineering decisions.
+- Clearly separate implemented behaviour from planned direction in documentation.
+- Summarise implementation outcomes and important decisions.
 - Recommend improvements to engineering guidance rather than changing it automatically.
 
 ### Future Direction

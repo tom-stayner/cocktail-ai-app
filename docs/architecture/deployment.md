@@ -1,12 +1,12 @@
 # Deployment
 
-The application is currently deployed locally for development.
+The application currently runs locally for development; it is not deployed to AWS hosting infrastructure.
 
 ## Current Deployment Model
 
 - Run the FastAPI app with Uvicorn from the project root.
-- Configure environment variables before launching the service.
-- Use the local DynamoDB-compatible environment already expected by the application.
+- Configure `AWS_REGION` and `TABLE_NAME` before launching the service.
+- Provide AWS credentials through the standard AWS credential provider chain so the application can access DynamoDB.
 
 ## Operational Notes
 
@@ -14,6 +14,8 @@ The application is currently deployed locally for development.
 - Health checks are available through the /health endpoint.
 - The application is not yet packaged for cloud deployment.
 
-## Next Step
+## Future Direction
 
 The next deployment milestone is to move the service into a hosted AWS environment while preserving the existing FastAPI structure and service layer.
+
+See [aws.md](aws.md) for the AWS architecture direction and [../setup.md](../setup.md) for local setup.

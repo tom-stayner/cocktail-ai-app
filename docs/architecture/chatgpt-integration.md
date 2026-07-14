@@ -1,251 +1,31 @@
-# ChatGPT & GitHub Integration
+# AI-Assisted Engineering
 
 ## Purpose
 
-This document describes how the Cocktail AI App project uses ChatGPT and the GitHub connector to support software architecture, engineering governance and implementation.
+This document describes how AI coding assistance supports engineering work in this repository. It complements, but does not replace, human ownership of product and architectural decisions.
 
-It documents the current capabilities, agreed workflows and any known limitations of the integration.
+## Governance
 
----
+[AGENTS.md](../../AGENTS.md) is the repository's Engineering Constitution and the source of truth for engineering principles, delivery workflow, documentation rules, and approval requirements.
 
-# Objectives
+The developer retains responsibility for product direction, AWS infrastructure, and final approval of architectural and repository changes.
 
-The GitHub repository is the single source of truth for:
+## Working Model
 
-- Source code
-- Architecture documentation
-- Product roadmap
-- Engineering decisions
+For significant work, AI assistance should:
 
-ChatGPT acts as an engineering partner rather than an external documentation tool.
+1. Review the relevant implementation and documentation.
+2. Identify affected code, tests, configuration, and documentation.
+3. Propose a plan and obtain approval for architectural or structural changes.
+4. Implement the approved work and verify it.
+5. Summarise the result, including material decisions and verification.
 
----
+Significant engineering decisions belong in the [engineering log](engineering-log.md). Current architecture and future direction belong in the relevant architecture documents.
 
-# Roles
+## Repository and GitHub
 
-## Developer
+The repository is the source of truth for source code, documentation, roadmap, and recorded engineering decisions. Pull requests and GitHub automation may be adopted as the delivery workflow evolves; their use should be documented once implemented and verified.
 
-Responsibilities include:
+## Future Direction
 
-- Product ownership
-- Software implementation
-- AWS infrastructure
-- Final engineering decisions
-- Pull Request approval
-
----
-
-## ChatGPT
-
-Acts as the project's Technical Architect.
-
-Responsibilities include:
-
-- Architecture reviews
-- Code reviews
-- Documentation maintenance
-- Technical debt identification
-- Engineering governance
-- Long-term architectural guidance
-- Roadmap refinement
-
----
-
-# Agreed Workflow
-
-Every significant feature follows the same lifecycle.
-
-```text
-Idea
-
-↓
-
-Architecture discussion
-
-↓
-
-Decision
-
-↓
-
-Implementation
-
-↓
-
-Review
-
-↓
-
-Documentation update
-
-↓
-
-Commit
-
-↓
-
-Pull Request
-
-↓
-
-Merge
-```
-
-Architecture documentation is considered part of the Definition of Done.
-
----
-
-# Repository Principles
-
-The project follows several engineering principles.
-
-- GitHub is the source of truth.
-- Documentation evolves with the implementation.
-- Architecture decisions are recorded.
-- Small incremental improvements are preferred.
-- Long-term maintainability is prioritised over short-term optimisation.
-
----
-
-# Documentation Responsibilities
-
-Architecture documentation should describe:
-
-- Why the system exists.
-- Current architecture.
-- Target architecture.
-- Engineering decisions.
-- Responsibilities of major components.
-
-Documentation should avoid implementation details that are likely to change.
-
----
-
-# GitHub Connector Status
-
-Current assessment:
-
-| Capability | Status |
-|------------|--------|
-| Repository connection | ✅ Confirmed |
-| Repository metadata | ✅ Confirmed |
-| Repository file discovery | ⚠ Limited |
-| File content retrieval | ⚠ Under investigation |
-| Code search | ⚠ Under investigation |
-| Branch creation | ⚠ Not yet tested |
-| Commit creation | ⚠ Not yet tested |
-| Pull Request creation | ⚠ Not yet tested |
-
-This table will be updated as additional connector capabilities become available or are verified.
-
----
-
-# Architecture Governance
-
-Whenever a significant architectural change is introduced, the following should be reviewed:
-
-- overview.md
-- backend.md
-- frontend.md
-- services.md
-- data-model.md
-- aws.md
-- deployment.md
-- roadmap.md
-- decisions.md
-
-Only documents affected by the change require updating.
-
----
-
-# Health Reviews
-
-Periodic project reviews assess:
-
-- Architecture
-- Code quality
-- Technical debt
-- Security
-- Documentation
-- Testing
-- AWS readiness
-- AI readiness
-
-The review process is intended to keep the repository healthy as it evolves.
-
----
-
-# Future Improvements
-
-Potential future GitHub workflow:
-
-```text
-ChatGPT
-
-↓
-
-Create Branch
-
-↓
-
-Modify Repository
-
-↓
-
-Commit
-
-↓
-
-Open Pull Request
-
-↓
-
-Developer Review
-
-↓
-
-Merge
-```
-
-If supported by future GitHub connector capabilities, this workflow will become the preferred engineering process.
-
----
-
-# Revision History
-
-| Date | Change |
-|------|--------|
-| 2026-07-14 | Initial document created. |
-
----
-
-# Lessons Learned
-
-This document should also capture lessons learned about using AI-assisted software development.
-
-Examples include:
-
-- Successful engineering workflows.
-- GitHub connector capabilities.
-- AI review processes.
-- Documentation practices.
-- Development patterns that improve productivity.
-
-These lessons are intended to improve both the Cocktail AI App and future software projects.
-
----
-
-# Verified Capabilities
-
-The following capabilities have been demonstrated through practical testing.
-
-| Capability | Status | Last Verified |
-|------------|--------|---------------|
-| Repository connection | ✅ | 2026-07-14 |
-| Repository metadata | ✅ | 2026-07-14 |
-| File content retrieval | ❌ | 2026-07-14 |
-| Repository search | ❌ | 2026-07-14 |
-| Repository modification | ❌ | 2026-07-14 |
-| Pull Request creation | ❌ | 2026-07-14 |
-
-This table records observed behaviour rather than expected functionality and will be updated as new capabilities are verified.
+Potential future improvements include a repeatable pull-request workflow, automated checks, and lessons learned from AI-assisted development. These should be added only after they are demonstrated in this repository.

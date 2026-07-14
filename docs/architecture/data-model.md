@@ -11,11 +11,11 @@ Each cocktail is stored as a DynamoDB item with the following fields:
 - spirit: string
 - ingredients: list of strings
 
-## Notes
+## Current Implementation Notes
 
 The model reflects the current implementation and is designed to support simple CRUD operations through the API.
 
-## Future Extension
+## Future Direction
 
 The model can evolve to include fields such as:
 - description
@@ -23,3 +23,5 @@ The model can evolve to include fields such as:
 - tags
 - ratings
 - pairing suggestions
+
+See the [architecture overview](overview.md) for component responsibilities and the [roadmap](roadmap.md) for planned product evolution.
