@@ -24,4 +24,4 @@ The model can evolve to include fields such as:
 - ratings
 - pairing suggestions
 
-See the [architecture overview](overview.md) for component responsibilities and the [roadmap](roadmap.md) for planned product evolution.
+See the [architecture overview](overview.md) for component responsibilities and the [product roadmap](../roadmap.md) for planned product evolution.

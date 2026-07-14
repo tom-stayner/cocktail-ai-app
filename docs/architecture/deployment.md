@@ -18,4 +18,4 @@ The application currently runs locally for development; it is not deployed to AW
 
 The next deployment milestone is to move the service into a hosted AWS environment while preserving the existing FastAPI structure and service layer.
 
-See [aws.md](aws.md) for the AWS architecture direction and [../setup.md](../setup.md) for local setup.
+See [aws.md](aws.md) for the AWS architecture direction and [local setup](../setup.md) for local setup.

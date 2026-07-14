@@ -15,7 +15,7 @@ The current application provides a small, local FastAPI foundation with:
 - a service layer separating route handlers from CRUD logic
 - a health endpoint, structured logging, regression tests, and local setup documentation
 
-This phase establishes the engineering baseline; it is not yet a hosted, user-facing cloud platform. See the [architecture overview](overview.md) for the current system shape.
+This phase establishes the engineering baseline; it is not yet a hosted, user-facing cloud platform. See the [architecture overview](architecture/overview.md) for the current system shape.
 
 ## Planned Milestones
 
@@ -55,4 +55,4 @@ These ideas should be assessed against user value, engineering complexity, data 
 
 Across all milestones, the project aims to demonstrate clean, maintainable architecture; AWS best practices; thoughtful AI integration; automated testing; clear documentation; and continuous improvement. Detailed implementation tasks belong in issue tracking or milestone plans, not in this roadmap.
 
-See [aws.md](aws.md) for the current AWS direction, [deployment.md](deployment.md) for deployment posture, and [AGENTS.md](../../AGENTS.md) for repository engineering governance.
+See [AWS architecture](architecture/aws.md), [deployment](architecture/deployment.md), and [AGENTS.md](../AGENTS.md) for related guidance.

@@ -58,4 +58,3 @@ Changes should be infrequent and only made when repeated engineering experience 
 ## Notes
 
 The project remains intentionally simple at this stage while the architecture is being established for future cloud and AI expansion.
-

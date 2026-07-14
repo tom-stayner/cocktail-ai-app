@@ -20,4 +20,4 @@ A future version is expected to use:
 
 The repository keeps the AWS design intentionally lightweight at this stage so the implementation remains easy to evolve.
 
-See [deployment.md](deployment.md) for the current operating model and [roadmap.md](roadmap.md) for planned milestones.
+See [deployment.md](deployment.md) for the current operating model and the [product roadmap](../roadmap.md) for planned milestones.

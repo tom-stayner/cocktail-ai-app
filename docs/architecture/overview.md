@@ -27,8 +27,7 @@ The long-term direction is a cloud-native, AWS-based application with AI-assiste
 - [AWS architecture](aws.md): current AWS integration and planned hosting direction
 - [Deployment](deployment.md): current local operating model and deployment milestone
 - [Data model](data-model.md): persisted cocktail record shape
-- [Roadmap](roadmap.md): planned evolution
-- [Engineering log](engineering-log.md): significant implementation history and decisions
-- [AI-assisted engineering](chatgpt-integration.md): collaboration workflow and integration notes
+- [Product roadmap](../roadmap.md): planned evolution
+- [Engineering log](../development/engineering-log.md): significant implementation history and decisions
 
-For setup and project-wide delivery standards, see the [setup guide](../setup.md) and [project standards](../project-standards.md).
+For setup and project-wide delivery standards, see the [setup guide](../setup.md) and [coding standards](../development/coding-standards.md).
