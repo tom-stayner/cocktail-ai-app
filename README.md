@@ -8,7 +8,10 @@ Cocktail AI App is a Cloud & AI Engineering portfolio project focused on product
 
 - FastAPI JSON API and server-rendered HTML views
 - Cocktail CRUD operations backed by DynamoDB
-- Service-layer separation, health monitoring, structured logging, and regression tests
+- Separate process-liveness and DynamoDB-readiness health endpoints
+- Centralised, validated environment configuration
+- Service-owned logging through the named `cocktail_api` logger
+- Regression and resilience tests covering successful and failure paths
 - Interactive Swagger API documentation
 
 ## Getting Started

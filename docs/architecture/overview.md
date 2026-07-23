@@ -8,14 +8,18 @@ The project is currently a Python FastAPI application with:
 - a small HTTP API for cocktail data
 - HTML views served from the same application
 - a service layer that separates business logic from route handlers
-- DynamoDB as the persistence layer, configured through `AWS_REGION` and `TABLE_NAME`
+- separate liveness and DynamoDB readiness checks
+- immutable, validated application configuration
+- named application logging with service-owned operational events
+- DynamoDB as the persistence layer
+- regression and resilience tests
 - static CSS and a browser favicon served by the application
 
 ## Current Architecture Diagram
 
 - **Status:** Current Implementation
-- **Version:** 0.3.0
-- **Last Updated:** 2026-07-14
+- **Version:** 0.4.0
+- **Last Updated:** 2026-07-23
 
 ```mermaid
 flowchart TD
@@ -25,14 +29,24 @@ flowchart TD
     Browser --> FastAPI["FastAPI Route Handlers"]
 
     FastAPI --> Service["Cocktail Service"]
+    FastAPI --> Health["Health Service"]
 
     Service --> Database["Database Module"]
+    Health --> Database
 
     Database --> DynamoDB["AWS DynamoDB"]
+
+    Config["Central Configuration"] --> FastAPI
+    Config --> Database
+    Config --> Logging["Logging Configuration"]
 
     FastAPI --> HTML["HTML Rendering"]
 
     HTML --> Browser
+
+    Tests["Regression and Resilience Tests"] -.-> FastAPI
+    Tests -.-> Service
+    Tests -.-> Health
 ```
 
 ## Future Direction
@@ -71,8 +85,8 @@ Image --> S3["Amazon S3"]
 ## Project Structure
 
 - **Status:** Current Implementation
-- **Version:** 0.3.0
-- **Last Updated:** 2026-07-14
+- **Version:** 0.4.0
+- **Last Updated:** 2026-07-23
 
 ```mermaid
 flowchart LR
@@ -80,19 +94,31 @@ flowchart LR
 main["main.py"]
 
 main --> services["services/"]
+main --> health["health_service.py"]
+main --> config["config.py"]
 main --> models["models.py"]
 main --> logging["logging_config.py"]
-main --> database["database.py"]
 
 services --> cocktail["cocktail_service.py"]
+cocktail --> database["database.py"]
+health --> database
+database --> config
+logging --> config
+tests["tests/"] --> main
+tests --> cocktail
+tests --> health
+tests --> config
 ```
 
 ## Main Components
 
 - FastAPI application: request handling and HTML rendering
-- Service layer: cocktail CRUD operations and business logic
+- Cocktail service: DynamoDB-backed CRUD operations and business logic
+- Health service: DynamoDB readiness checks
+- Central configuration: immutable, validated application and infrastructure settings
 - DynamoDB table: persistent storage for cocktail records
-- Logging: structured application logging for local operations
+- Logging: named application logging with severity and ownership policies
+- Tests: regression and resilience coverage without live AWS calls
 
 ## Documentation Map
 

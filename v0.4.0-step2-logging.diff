@@ -1,0 +1,560 @@
+diff --git a/docs/development/changelog.md b/docs/development/changelog.md
+index 0bce2de..9c83387 100644
+--- a/docs/development/changelog.md
++++ b/docs/development/changelog.md
+@@ -18,6 +18,11 @@ and this project follows
+ 
+ - Preserved `/health` as a backward-compatible liveness endpoint.
+ - Successful health checks no longer generate application INFO logs.
++- Reduced duplicate application logging between API routes and services.
++- Classified routine reads and HTML rendering as debug-level events.
++- Standardised application logs on the named `cocktail_api` logger.
++- Avoided logging user-supplied cocktail content.
++- Corrected DynamoDB startup logging to describe configuration rather than connectivity.
+ 
+ ---
+ 
+diff --git a/src/database.py b/src/database.py
+index c03ee72..103f5e0 100644
+--- a/src/database.py
++++ b/src/database.py
+@@ -8,17 +8,12 @@ load_dotenv()
+ AWS_REGION = os.getenv("AWS_REGION")
+ TABLE_NAME = os.getenv("TABLE_NAME")
+ 
+-dynamodb = boto3.resource(
+-    "dynamodb",
+-    region_name=AWS_REGION
+-)
++dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
+ 
+ table = dynamodb.Table(TABLE_NAME)
+ 
+ logger.info(
+-    f"[SYSTEM] AWS Region: {AWS_REGION}"
++    "[SYSTEM] DynamoDB configured (region=%s, table=%s)",
++    AWS_REGION,
++    TABLE_NAME,
+ )
+-
+-logger.info(
+-    f"[SYSTEM] Connected to DynamoDB table '{TABLE_NAME}'"
+-)
+\ No newline at end of file
+diff --git a/src/logging_config.py b/src/logging_config.py
+index da37c50..1d38d5a 100644
+--- a/src/logging_config.py
++++ b/src/logging_config.py
+@@ -22,4 +22,4 @@ logging.getLogger("boto3").setLevel(logging.WARNING)
+ logging.getLogger("urllib3").setLevel(logging.WARNING)
+ 
+ # Application logger
+-logger = logging.getLogger()
+\ No newline at end of file
++logger = logging.getLogger("cocktail_api")
+diff --git a/src/main.py b/src/main.py
+index 6f7d940..fd40887 100644
+--- a/src/main.py
++++ b/src/main.py
+@@ -3,7 +3,6 @@
+ # =====================================================
+ 
+ from fastapi import FastAPI
+-from fastapi import HTTPException
+ from fastapi import status
+ from fastapi.responses import FileResponse
+ from fastapi.responses import HTMLResponse
+@@ -32,23 +31,20 @@ app = FastAPI(
+ 
+     Part of my Cloud & AI Engineering learning project.
+     """,
+-    version="0.3.0"
++    version="0.3.0",
+ )
+ 
+ # =====================================================
+ # Static Files
+ # =====================================================
+ 
+-app.mount(
+-    "/static",
+-    StaticFiles(directory="static"),
+-    name="static"
+-)
++app.mount("/static", StaticFiles(directory="static"), name="static")
+ 
+ # =====================================================
+ # Helper Functions
+ # =====================================================
+ 
++
+ def render_page(title: str, content: str) -> HTMLResponse:
+     return HTMLResponse(f"""
+     <html>
+@@ -75,16 +71,12 @@ def render_page(title: str, content: str) -> HTMLResponse:
+     </html>
+     """)
+ 
+-# =====================================================
+-# Application Initialization
+-# =====================================================
+-
+-logger.info("[SYSTEM] Cocktail API starting")
+ 
+ # =====================================================
+ # API Health and HTML Routes
+ # =====================================================
+ 
++
+ @app.get("/favicon.ico", include_in_schema=False)
+ def favicon() -> FileResponse:
+     """Serve the application favicon at the conventional browser URL."""
+@@ -132,13 +124,11 @@ def readiness_check() -> dict[str, object] | JSONResponse:
+ 
+ @app.get("/", response_class=HTMLResponse)
+ def root() -> HTMLResponse:
+-
+-    logger.info("[HTML] Rendering home page")
+-
+     cocktails = cocktail_service.get_all_cocktails()
+     cocktail_count = len(cocktails)
+-    logger.info(
+-        f"[HTML] Rendered home page with {cocktail_count} cocktails"
++    logger.debug(
++        "[HTML] Rendered home page (cocktail_count=%s)",
++        cocktail_count,
+     )
+ 
+     cocktail_list = ""
+@@ -184,16 +174,15 @@ def root() -> HTMLResponse:
+ 
+     return render_page("Tom's Cocktail API", content)
+ 
++
+ @app.get("/cocktails/html", response_class=HTMLResponse)
+ def cocktails_html() -> HTMLResponse:
+-
+-    logger.info("[HTML] Rendering cocktail library")
+-
+     cocktails = cocktail_service.get_all_cocktails()
+     cocktail_count = len(cocktails)
+ 
+-    logger.info(
+-        f"[HTML] Rendered cocktail library with {cocktail_count} cocktails"
++    logger.debug(
++        "[HTML] Rendered cocktail library (cocktail_count=%s)",
++        cocktail_count,
+     )
+ 
+     rows = ""
+@@ -232,23 +221,14 @@ def cocktails_html() -> HTMLResponse:
+ 
+     return render_page("Cocktails", content)
+ 
++
+ @app.get("/cocktails/html/{cocktail_id}", response_class=HTMLResponse)
+ def cocktail_html(cocktail_id: int) -> HTMLResponse:
++    item = cocktail_service.get_cocktail(cocktail_id)
+ 
+-    logger.info(
+-        f"[HTML] Rendering cocktail page (ID {cocktail_id})"
+-    )
+-
+-    try:
+-        item = cocktail_service.get_cocktail(cocktail_id)
+-    except HTTPException:
+-        logger.warning(
+-            f"[HTML] Cocktail ID {cocktail_id} not found"
+-        )
+-        raise
+-    
+-    logger.info(
+-        f"[HTML] Rendered cocktail '{item['name']}' (ID {cocktail_id})"
++    logger.debug(
++        "[HTML] Rendered cocktail page (ID %s)",
++        cocktail_id,
+     )
+ 
+     ingredients = ""
+@@ -278,58 +258,32 @@ def cocktail_html(cocktail_id: int) -> HTMLResponse:
+ 
+     return render_page(item["name"], content)
+ 
++
+ # =====================================================
+ # JSON API Routes
+ # =====================================================
+ 
++
+ @app.get("/cocktails")
+ def get_cocktails() -> list:
++    return cocktail_service.get_all_cocktails()
+ 
+-    logger.info("[API] Retrieving cocktail collection")
+-
+-    cocktails = cocktail_service.get_all_cocktails()
+-
+-    logger.info(
+-        f"[API] Returned {len(cocktails)} cocktails"
+-    )
+-
+-    return cocktails
+ 
+ @app.get("/cocktails/{cocktail_id}")
+ def get_cocktail(cocktail_id: int) -> dict:
+-
+-    logger.info(
+-        f"[API] Retrieving cocktail (ID {cocktail_id})"
+-    )
+-
+     return cocktail_service.get_cocktail(cocktail_id)
+ 
++
+ @app.post("/cocktails")
+ def create_cocktail(cocktail: Cocktail) -> dict:
+-
+-    logger.info(
+-        f"[API] Creating cocktail '{cocktail.name}' (ID {cocktail.id})"
+-    )
+-
+     return cocktail_service.create_cocktail(cocktail)
+ 
++
+ @app.delete("/cocktails/{cocktail_id}")
+ def delete_cocktail(cocktail_id: int) -> dict:
+-
+-    logger.info(
+-        f"[API] Deleting cocktail ID {cocktail_id}"
+-    )
+-
+     return cocktail_service.delete_cocktail(cocktail_id)
+ 
+-@app.put("/cocktails/{cocktail_id}")
+-def update_cocktail(
+-    cocktail_id: int,
+-    cocktail: Cocktail
+-) -> dict:
+-
+-    logger.info(
+-        f"[API] Updating cocktail ID {cocktail_id}"
+-    )
+ 
++@app.put("/cocktails/{cocktail_id}")
++def update_cocktail(cocktail_id: int, cocktail: Cocktail) -> dict:
+     return cocktail_service.update_cocktail(cocktail_id, cocktail)
+diff --git a/src/services/cocktail_service.py b/src/services/cocktail_service.py
+index cb11b44..323e215 100644
+--- a/src/services/cocktail_service.py
++++ b/src/services/cocktail_service.py
+@@ -8,53 +8,38 @@ from src.models import Cocktail
+ 
+ 
+ def get_all_cocktails() -> list[dict[str, Any]]:
+-
+-    logger.info("[SERVICE] Retrieving cocktail collection")
+-
+     response = table.scan()
+     cocktails = response["Items"]
+ 
+-    logger.info(
+-        f"[SERVICE] Retrieved {len(cocktails)} cocktails"
++    logger.debug(
++        "[SERVICE] Retrieved cocktail collection (count=%s)",
++        len(cocktails),
+     )
+ 
+     return cocktails
+ 
+ 
+ def get_cocktail(cocktail_id: int) -> dict[str, Any]:
+-
+-    logger.info(
+-        f"[SERVICE] Retrieving cocktail (ID {cocktail_id})"
+-    )
+-
+-    response = table.get_item(
+-        Key={"id": cocktail_id}
+-    )
++    response = table.get_item(Key={"id": cocktail_id})
+ 
+     item = response.get("Item")
+ 
+     if not item:
+-        logger.warning(
+-            f"[SERVICE] Cocktail ID {cocktail_id} not found"
+-        )
+-        raise HTTPException(
+-            status_code=404,
+-            detail="Cocktail not found"
++        logger.info(
++            "[SERVICE] Cocktail not found (ID %s)",
++            cocktail_id,
+         )
++        raise HTTPException(status_code=404, detail="Cocktail not found")
+ 
+-    logger.info(
+-        f"[SERVICE] Retrieved cocktail '{item['name']}'"
++    logger.debug(
++        "[SERVICE] Retrieved cocktail (ID %s)",
++        cocktail_id,
+     )
+ 
+     return item
+ 
+ 
+ def create_cocktail(cocktail: Cocktail) -> dict[str, str]:
+-
+-    logger.info(
+-        f"[SERVICE] Creating cocktail '{cocktail.name}' (ID {cocktail.id})"
+-    )
+-
+     table.put_item(
+         Item={
+             "id": cocktail.id,
+@@ -65,66 +50,44 @@ def create_cocktail(cocktail: Cocktail) -> dict[str, str]:
+     )
+ 
+     logger.info(
+-        f"[SERVICE] Created cocktail '{cocktail.name}'"
++        "[SERVICE] Cocktail created (ID %s)",
++        cocktail.id,
+     )
+ 
+-    return {
+-        "message": "Cocktail added successfully"
+-    }
++    return {"message": "Cocktail added successfully"}
+ 
+ 
+ def delete_cocktail(cocktail_id: int) -> dict[str, str]:
+-
+-    logger.info(
+-        f"[SERVICE] Deleting cocktail ID {cocktail_id}"
+-    )
+-
+-    response = table.get_item(
+-        Key={"id": cocktail_id}
+-    )
++    response = table.get_item(Key={"id": cocktail_id})
+ 
+     item = response.get("Item")
+ 
+     if not item:
+-        logger.warning(
+-            f"[SERVICE] Delete failed - cocktail ID {cocktail_id} not found"
+-        )
+-        raise HTTPException(
+-            status_code=404,
+-            detail="Cocktail not found"
++        logger.info(
++            "[SERVICE] Cocktail delete target not found (ID %s)",
++            cocktail_id,
+         )
++        raise HTTPException(status_code=404, detail="Cocktail not found")
+ 
+-    table.delete_item(
+-        Key={"id": cocktail_id}
+-    )
++    table.delete_item(Key={"id": cocktail_id})
+ 
+     logger.info(
+-        f"[SERVICE] Deleted cocktail '{item['name']}'"
++        "[SERVICE] Cocktail deleted (ID %s)",
++        cocktail_id,
+     )
+ 
+-    return {
+-        "message": f"Cocktail {cocktail_id} deleted"
+-    }
++    return {"message": f"Cocktail {cocktail_id} deleted"}
+ 
+ 
+ def update_cocktail(cocktail_id: int, cocktail: Cocktail) -> dict[str, Any]:
+-
+-    logger.info(
+-        f"[SERVICE] Updating cocktail ID {cocktail_id}"
+-    )
+-
+-    response = table.get_item(
+-        Key={"id": cocktail_id}
+-    )
++    response = table.get_item(Key={"id": cocktail_id})
+ 
+     if "Item" not in response:
+-        logger.warning(
+-            f"[SERVICE] Update failed - cocktail ID {cocktail_id} not found"
+-        )
+-        raise HTTPException(
+-            status_code=404,
+-            detail="Cocktail not found"
++        logger.info(
++            "[SERVICE] Cocktail update target not found (ID %s)",
++            cocktail_id,
+         )
++        raise HTTPException(status_code=404, detail="Cocktail not found")
+ 
+     updated_cocktail = {
+         "id": cocktail_id,
+@@ -136,7 +99,8 @@ def update_cocktail(cocktail_id: int, cocktail: Cocktail) -> dict[str, Any]:
+     table.put_item(Item=updated_cocktail)
+ 
+     logger.info(
+-        f"[SERVICE] Updated cocktail '{cocktail.name}'"
++        "[SERVICE] Cocktail updated (ID %s)",
++        cocktail_id,
+     )
+ 
+-    return updated_cocktail
+\ No newline at end of file
++    return updated_cocktail
+diff --git a/tests/test_cocktail_service.py b/tests/test_cocktail_service.py
+new file mode 100644
+index 0000000..a6ca91a
+--- /dev/null
++++ b/tests/test_cocktail_service.py
+@@ -0,0 +1,70 @@
++import logging
++from unittest.mock import MagicMock
++
++import pytest
++from fastapi import HTTPException
++
++from src.models import Cocktail
++from src.services import cocktail_service
++
++
++def application_records(caplog):
++    return [record for record in caplog.records if record.name == "cocktail_api"]
++
++
++def test_collection_read_logs_one_debug_completion(monkeypatch, caplog):
++    table = MagicMock()
++    table.scan.return_value = {"Items": [{"id": 17}]}
++    monkeypatch.setattr(cocktail_service, "table", table)
++
++    with caplog.at_level(logging.DEBUG, logger="cocktail_api"):
++        result = cocktail_service.get_all_cocktails()
++
++    assert result == [{"id": 17}]
++    records = application_records(caplog)
++    assert len(records) == 1
++    assert records[0].levelno == logging.DEBUG
++    assert "Retrieved cocktail collection" in records[0].getMessage()
++
++
++def test_get_cocktail_not_found_logs_info_not_warning(monkeypatch, caplog):
++    table = MagicMock()
++    table.get_item.return_value = {}
++    monkeypatch.setattr(cocktail_service, "table", table)
++
++    with caplog.at_level(logging.INFO, logger="cocktail_api"):
++        with pytest.raises(HTTPException) as exception_info:
++            cocktail_service.get_cocktail(123)
++
++    assert exception_info.value.status_code == 404
++    records = application_records(caplog)
++    assert any(
++        record.levelno == logging.INFO and "Cocktail not found" in record.getMessage()
++        for record in records
++    )
++    assert not any(record.levelno == logging.WARNING for record in records)
++
++
++def test_create_cocktail_logs_one_safe_info_completion(monkeypatch, caplog):
++    table = MagicMock()
++    monkeypatch.setattr(cocktail_service, "table", table)
++    cocktail = Cocktail(
++        id=17,
++        name="User\nSupplied Name",
++        spirit="Gin",
++        ingredients=["Gin"],
++    )
++
++    with caplog.at_level(logging.INFO, logger="cocktail_api"):
++        result = cocktail_service.create_cocktail(cocktail)
++
++    assert result == {"message": "Cocktail added successfully"}
++    records = [
++        record
++        for record in application_records(caplog)
++        if record.levelno == logging.INFO
++    ]
++    assert len(records) == 1
++    assert "Cocktail created" in records[0].getMessage()
++    assert "17" in records[0].getMessage()
++    assert cocktail.name not in records[0].getMessage()
+diff --git a/tests/test_logging_config.py b/tests/test_logging_config.py
+new file mode 100644
+index 0000000..34f0efb
+--- /dev/null
++++ b/tests/test_logging_config.py
+@@ -0,0 +1,5 @@
++from src.logging_config import logger
++
++
++def test_application_logger_is_named():
++    assert logger.name == "cocktail_api"
+diff --git a/tests/test_main.py b/tests/test_main.py
+index cdd7edf..e7063ac 100644
+--- a/tests/test_main.py
++++ b/tests/test_main.py
+@@ -1,8 +1,10 @@
++import logging
++
++from fastapi import HTTPException
+ from fastapi.testclient import TestClient
+ 
+ from src.main import app
+ 
+-
+ client = TestClient(app)
+ 
+ 
+@@ -98,6 +100,27 @@ def test_readiness_endpoint_returns_503_when_dynamodb_is_unavailable(
+     assert "detail" not in response.json()
+ 
+ 
++def test_successful_health_endpoints_do_not_log_at_info(monkeypatch, caplog):
++    monkeypatch.setattr(
++        "src.main.health_service.is_dynamodb_ready",
++        lambda: True,
++    )
++
++    with caplog.at_level(logging.INFO, logger="cocktail_api"):
++        responses = [
++            client.get("/health"),
++            client.get("/health/live"),
++            client.get("/health/ready"),
++        ]
++
++    assert all(response.status_code == 200 for response in responses)
++    assert not [
++        record
++        for record in caplog.records
++        if record.name == "cocktail_api" and record.levelno >= logging.INFO
++    ]
++
++
+ def test_openapi_version_matches_current_release():
+     response = client.get("/openapi.json")
+ 
+@@ -164,3 +187,19 @@ def test_cocktail_html_uses_service(monkeypatch):
+     assert response.status_code == 200
+     assert "Margarita" in response.text
+     assert "Lime juice" in response.text
++
++
++def test_cocktail_html_does_not_duplicate_not_found_log(monkeypatch, caplog):
++    def raise_not_found(cocktail_id: int):
++        raise HTTPException(status_code=404, detail="Cocktail not found")
++
++    monkeypatch.setattr(
++        "src.main.cocktail_service.get_cocktail",
++        raise_not_found,
++    )
++
++    with caplog.at_level(logging.DEBUG, logger="cocktail_api"):
++        response = client.get("/cocktails/html/123")
++
++    assert response.status_code == 404
++    assert not [record for record in caplog.records if record.name == "cocktail_api"]

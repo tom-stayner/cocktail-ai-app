@@ -12,12 +12,21 @@ and this project follows
 ### Added
 
 - Separate liveness and DynamoDB readiness health endpoints.
-- Readiness checks return HTTP 503 when DynamoDB is unavailable.
+- Centralised typed application configuration with validated environment settings.
+- Expanded failure-path coverage for validation errors, missing resources, DynamoDB interactions and health-check degradation.
 
 ### Changed
 
 - Preserved `/health` as a backward-compatible liveness endpoint.
+- Readiness checks now return HTTP 503 when DynamoDB is unavailable.
 - Successful health checks no longer generate application INFO logs.
+- Reduced duplicate application logging between API routes and services.
+- Classified routine reads and HTML rendering as debug-level events.
+- Standardised application logs on the named `cocktail_api` logger.
+- Avoided logging user-supplied cocktail content.
+- Corrected DynamoDB startup logging to describe configuration rather than connectivity.
+- FastAPI metadata, DynamoDB settings and application log level now use shared configuration.
+- Local environment examples now provide safe project defaults.
 
 ---
 

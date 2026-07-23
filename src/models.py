@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class Cocktail(BaseModel):
     id: int
     name: str

@@ -1,24 +1,14 @@
 import boto3
+
+from src.config import settings
 from src.logging_config import logger
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+dynamodb = boto3.resource("dynamodb", region_name=settings.aws_region)
 
-AWS_REGION = os.getenv("AWS_REGION")
-TABLE_NAME = os.getenv("TABLE_NAME")
-
-dynamodb = boto3.resource(
-    "dynamodb",
-    region_name=AWS_REGION
-)
-
-table = dynamodb.Table(TABLE_NAME)
+table = dynamodb.Table(settings.table_name)
 
 logger.info(
-    f"[SYSTEM] AWS Region: {AWS_REGION}"
-)
-
-logger.info(
-    f"[SYSTEM] Connected to DynamoDB table '{TABLE_NAME}'"
+    "[SYSTEM] DynamoDB configured (region=%s, table=%s)",
+    settings.aws_region,
+    settings.table_name,
 )

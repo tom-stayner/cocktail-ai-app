@@ -1,5 +1,33 @@
 # Engineering Log
 
+## 2026-07-23 — v0.4.0 Operational Readiness
+
+### Context
+
+The application needed clearer operational health signals, quieter and safer logging, centralised configuration, and stronger failure-path coverage before deployment work begins.
+
+### Decisions
+
+- Separated process liveness from dependency readiness while preserving the existing `/health` response for compatibility.
+- Used DynamoDB `DescribeTable` for a lightweight, read-only readiness check.
+- Assigned cocktail-operation logging primarily to the service layer and standardised application records on the named `cocktail_api` logger.
+- Introduced immutable central settings with fail-fast validation for application, AWS, and logging configuration.
+- Expanded network-free tests around invalid input, missing resources, DynamoDB interactions, dependency degradation, and unexpected failures.
+- Kept unexpected DynamoDB exceptions visible rather than hiding them behind broad exception handling.
+
+### Trade-offs
+
+- `DescribeTable` requires the runtime AWS identity to have `dynamodb:DescribeTable`.
+- Settings are loaded once; configuration changes require a process restart.
+- General DynamoDB exceptions still propagate pending a future API error policy.
+- Update requests still accept both path and body IDs, with the path ID authoritative.
+
+### Outcome
+
+The application now has stronger operational contracts while remaining simple, local-first, and deployment-neutral.
+
+---
+
 ## 2026-07-14
 
 ### Documented AI-Assisted Development Workflow

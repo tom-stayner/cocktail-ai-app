@@ -1,0 +1,321 @@
+diff --git a/.env.example b/.env.example
+index 15eebed..2dc2912 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,6 +1,6 @@
+ # Application
+ APP_NAME=Tom's Cocktail API
+-APP_VERSION=0.3.0
++APP_VERSION=0.4.0
+ APP_ENV=development
+ 
+ # AWS
+diff --git a/README.md b/README.md
+index 1b5fc47..2bcb81b 100644
+--- a/README.md
++++ b/README.md
+@@ -8,7 +8,10 @@ Cocktail AI App is a Cloud & AI Engineering portfolio project focused on product
+ 
+ - FastAPI JSON API and server-rendered HTML views
+ - Cocktail CRUD operations backed by DynamoDB
+-- Service-layer separation, health monitoring, structured logging, and regression tests
++- Separate process-liveness and DynamoDB-readiness health endpoints
++- Centralised, validated environment configuration
++- Service-owned logging through the named `cocktail_api` logger
++- Regression and resilience tests covering successful and failure paths
+ - Interactive Swagger API documentation
+ 
+ ## Getting Started
+diff --git a/docs/architecture/aws.md b/docs/architecture/aws.md
+index 9a94449..40b1fc0 100644
+--- a/docs/architecture/aws.md
++++ b/docs/architecture/aws.md
+@@ -5,8 +5,11 @@ The current implementation does not yet use a full AWS deployment. The applicati
+ ## Current Implementation
+ 
+ - The backend uses DynamoDB as its persistence layer.
+-- Configuration is provided through the `AWS_REGION` and `TABLE_NAME` environment variables.
++- DynamoDB settings are loaded through the central validated configuration module.
+ - The application runs locally and uses the standard AWS credential provider chain to access DynamoDB. It does not currently configure a local DynamoDB endpoint.
++- The readiness endpoint calls DynamoDB `DescribeTable`; the runtime AWS identity therefore requires `dynamodb:DescribeTable` in addition to permissions needed for cocktail CRUD operations.
++
++The repository does not currently provision or modify IAM policies. Local developer credentials and any future deployment role must supply the required permissions through the normal AWS operating model.
+ 
+ ## Future Direction
+ 
+diff --git a/docs/architecture/deployment.md b/docs/architecture/deployment.md
+index a965646..196ee1e 100644
+--- a/docs/architecture/deployment.md
++++ b/docs/architecture/deployment.md
+@@ -5,13 +5,14 @@ The application currently runs locally for development; it is not deployed to AW
+ ## Current Deployment Model
+ 
+ - Run the FastAPI app with Uvicorn from the project root.
+-- Configure `AWS_REGION` and `TABLE_NAME` before launching the service.
++- Supply application settings through environment variables or a local `.env` file.
+ - Provide AWS credentials through the standard AWS credential provider chain so the application can access DynamoDB.
+ 
+ ## Operational Notes
+ 
+ - Logging is written to the local logs directory.
+-- Health checks are available through the /health endpoint.
++- `/health` preserves the backward-compatible basic response, `/health/live` reports process liveness, and `/health/ready` checks DynamoDB availability.
++- The health endpoints are suitable for future container or load-balancer probes, but are not currently wired into deployment infrastructure.
+ - The application is not yet packaged for cloud deployment.
+ 
+ ## Future Direction
+diff --git a/docs/architecture/overview.md b/docs/architecture/overview.md
+index ed1f5fe..57f180c 100644
+--- a/docs/architecture/overview.md
++++ b/docs/architecture/overview.md
+@@ -8,14 +8,18 @@ The project is currently a Python FastAPI application with:
+ - a small HTTP API for cocktail data
+ - HTML views served from the same application
+ - a service layer that separates business logic from route handlers
+-- DynamoDB as the persistence layer, configured through `AWS_REGION` and `TABLE_NAME`
++- separate liveness and DynamoDB readiness checks
++- immutable, validated application configuration
++- named application logging with service-owned operational events
++- DynamoDB as the persistence layer
++- regression and resilience tests
+ - static CSS and a browser favicon served by the application
+ 
+ ## Current Architecture Diagram
+ 
+ - **Status:** Current Implementation
+-- **Version:** 0.3.0
+-- **Last Updated:** 2026-07-14
++- **Version:** 0.4.0
++- **Last Updated:** 2026-07-23
+ 
+ ```mermaid
+ flowchart TD
+@@ -25,14 +29,24 @@ flowchart TD
+     Browser --> FastAPI["FastAPI Route Handlers"]
+ 
+     FastAPI --> Service["Cocktail Service"]
++    FastAPI --> Health["Health Service"]
+ 
+     Service --> Database["Database Module"]
++    Health --> Database
+ 
+     Database --> DynamoDB["AWS DynamoDB"]
+ 
++    Config["Central Configuration"] --> FastAPI
++    Config --> Database
++    Config --> Logging["Logging Configuration"]
++
+     FastAPI --> HTML["HTML Rendering"]
+ 
+     HTML --> Browser
++
++    Tests["Regression and Resilience Tests"] -.-> FastAPI
++    Tests -.-> Service
++    Tests -.-> Health
+ ```
+ 
+ ## Future Direction
+@@ -71,8 +85,8 @@ Image --> S3["Amazon S3"]
+ ## Project Structure
+ 
+ - **Status:** Current Implementation
+-- **Version:** 0.3.0
+-- **Last Updated:** 2026-07-14
++- **Version:** 0.4.0
++- **Last Updated:** 2026-07-23
+ 
+ ```mermaid
+ flowchart LR
+@@ -80,19 +94,31 @@ flowchart LR
+ main["main.py"]
+ 
+ main --> services["services/"]
++main --> health["health_service.py"]
++main --> config["config.py"]
+ main --> models["models.py"]
+ main --> logging["logging_config.py"]
+-main --> database["database.py"]
+ 
+ services --> cocktail["cocktail_service.py"]
++cocktail --> database["database.py"]
++health --> database
++database --> config
++logging --> config
++tests["tests/"] --> main
++tests --> cocktail
++tests --> health
++tests --> config
+ ```
+ 
+ ## Main Components
+ 
+ - FastAPI application: request handling and HTML rendering
+-- Service layer: cocktail CRUD operations and business logic
++- Cocktail service: DynamoDB-backed CRUD operations and business logic
++- Health service: DynamoDB readiness checks
++- Central configuration: immutable, validated application and infrastructure settings
+ - DynamoDB table: persistent storage for cocktail records
+-- Logging: structured application logging for local operations
++- Logging: named application logging with severity and ownership policies
++- Tests: regression and resilience coverage without live AWS calls
+ 
+ ## Documentation Map
+ 
+diff --git a/docs/development/changelog.md b/docs/development/changelog.md
+index be0d191..02cb8fa 100644
+--- a/docs/development/changelog.md
++++ b/docs/development/changelog.md
+@@ -7,18 +7,18 @@ The format is based on the principles of
+ and this project follows
+ [Semantic Versioning](https://semver.org/).
+ 
+-## [0.4.0]
++## [0.4.0] - 2026-07-23
+ 
+ ### Added
+ 
+ - Separate liveness and DynamoDB readiness health endpoints.
+-- Readiness checks return HTTP 503 when DynamoDB is unavailable.
+ - Centralised typed application configuration with validated environment settings.
+ - Expanded failure-path coverage for validation errors, missing resources, DynamoDB interactions and health-check degradation.
+ 
+ ### Changed
+ 
+ - Preserved `/health` as a backward-compatible liveness endpoint.
++- Readiness checks now return HTTP 503 when DynamoDB is unavailable.
+ - Successful health checks no longer generate application INFO logs.
+ - Reduced duplicate application logging between API routes and services.
+ - Classified routine reads and HTML rendering as debug-level events.
+diff --git a/docs/development/engineering-log.md b/docs/development/engineering-log.md
+index d11c389..5ae9137 100644
+--- a/docs/development/engineering-log.md
++++ b/docs/development/engineering-log.md
+@@ -1,5 +1,33 @@
+ # Engineering Log
+ 
++## 2026-07-23 — v0.4.0 Operational Readiness
++
++### Context
++
++The application needed clearer operational health signals, quieter and safer logging, centralised configuration, and stronger failure-path coverage before deployment work begins.
++
++### Decisions
++
++- Separated process liveness from dependency readiness while preserving the existing `/health` response for compatibility.
++- Used DynamoDB `DescribeTable` for a lightweight, read-only readiness check.
++- Assigned cocktail-operation logging primarily to the service layer and standardised application records on the named `cocktail_api` logger.
++- Introduced immutable central settings with fail-fast validation for application, AWS, and logging configuration.
++- Expanded network-free tests around invalid input, missing resources, DynamoDB interactions, dependency degradation, and unexpected failures.
++- Kept unexpected DynamoDB exceptions visible rather than hiding them behind broad exception handling.
++
++### Trade-offs
++
++- `DescribeTable` requires the runtime AWS identity to have `dynamodb:DescribeTable`.
++- Settings are loaded once; configuration changes require a process restart.
++- General DynamoDB exceptions still propagate pending a future API error policy.
++- Update requests still accept both path and body IDs, with the path ID authoritative.
++
++### Outcome
++
++The application now has stronger operational contracts while remaining simple, local-first, and deployment-neutral.
++
++---
++
+ ## 2026-07-14
+ 
+ ### Documented AI-Assisted Development Workflow
+diff --git a/docs/roadmap.md b/docs/roadmap.md
+index 5309d98..49bcd6a 100644
+--- a/docs/roadmap.md
++++ b/docs/roadmap.md
+@@ -13,7 +13,10 @@ The current application provides a small, local FastAPI foundation with:
+ - JSON cocktail CRUD endpoints and server-rendered HTML views
+ - DynamoDB-backed cocktail records, including ingredient lists
+ - a service layer separating route handlers from CRUD logic
+-- a health endpoint, structured logging, regression tests, and local setup documentation
++- separate liveness and readiness endpoints with DynamoDB dependency checks
++- centralised validated configuration and named application logging
++- regression and resilience tests covering validation and dependency failures
++- aligned local setup, architecture, and operational documentation
+ 
+ This phase establishes the engineering baseline; it is not yet a hosted, user-facing cloud platform. See the [architecture overview](architecture/overview.md) for the current system shape.
+ 
+@@ -56,4 +59,3 @@ These ideas should be assessed against user value, engineering complexity, data
+ Across all milestones, the project aims to demonstrate clean, maintainable architecture; AWS best practices; thoughtful AI integration; automated testing; clear documentation; and continuous improvement. Detailed implementation tasks belong in issue tracking or milestone plans, not in this roadmap.
+ 
+ See [AWS architecture](architecture/aws.md), [deployment](architecture/deployment.md), and [AGENTS.md](../AGENTS.md) for related guidance.
+-   
+\ No newline at end of file
+diff --git a/docs/setup.md b/docs/setup.md
+index b09d44a..f26df6d 100644
+--- a/docs/setup.md
++++ b/docs/setup.md
+@@ -22,7 +22,7 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
+ | Variable | Default | Purpose |
+ | --- | --- | --- |
+ | `APP_NAME` | `Tom's Cocktail API` | FastAPI service name |
+-| `APP_VERSION` | `0.3.0` | Current application version |
++| `APP_VERSION` | `0.4.0` | Current application version |
+ | `APP_ENV` | `development` | Runtime environment |
+ | `AWS_REGION` | `ap-southeast-2` | AWS region |
+ | `TABLE_NAME` | `Cocktails` | DynamoDB table |
+@@ -37,10 +37,17 @@ Using a `.env` file is convenient for local development. Deployed environments s
+ ## Local Endpoints
+ 
+ - `/` — HTML landing page
+-- `/health` — basic health check
+ - `/docs` — Swagger UI
+ - `/favicon.ico` — browser favicon
+ 
++| Endpoint | Purpose | Dependency check |
++| --- | --- | --- |
++| `/health` | Backward-compatible basic health response | No |
++| `/health/live` | Process liveness | No |
++| `/health/ready` | Application readiness | DynamoDB |
++
++`/health/ready` returns HTTP 200 when DynamoDB is available and HTTP 503 when it is unavailable. The AWS identity used by the application requires `dynamodb:DescribeTable` for this readiness check.
++
+ ## Configuration and Security
+ 
+ Application settings are supplied through environment variables and are not stored in the repository. Do not commit `.env`, AWS credentials, API keys, or passwords.
+diff --git a/src/config.py b/src/config.py
+index a8d5b24..86e01d1 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -5,7 +5,7 @@ import os
+ from dotenv import load_dotenv
+ 
+ DEFAULT_APP_NAME = "Tom's Cocktail API"
+-DEFAULT_APP_VERSION = "0.3.0"
++DEFAULT_APP_VERSION = "0.4.0"
+ DEFAULT_APP_ENV = "development"
+ DEFAULT_AWS_REGION = "ap-southeast-2"
+ DEFAULT_TABLE_NAME = "Cocktails"
+diff --git a/src/models.py b/src/models.py
+index 6fc2e3b..ba5e25b 100644
+--- a/src/models.py
++++ b/src/models.py
+@@ -1,7 +1,8 @@
+ from pydantic import BaseModel
+ 
++
+ class Cocktail(BaseModel):
+     id: int
+     name: str
+     spirit: str
+-    ingredients: list[str]
+\ No newline at end of file
++    ingredients: list[str]
+diff --git a/tests/test_main.py b/tests/test_main.py
+index b6bfa4d..f9176fc 100644
+--- a/tests/test_main.py
++++ b/tests/test_main.py
+@@ -156,7 +156,7 @@ def test_openapi_version_matches_current_release():
+     response = client.get("/openapi.json")
+ 
+     assert response.status_code == 200
+-    assert response.json()["info"]["version"] == "0.3.0"
++    assert response.json()["info"]["version"] == "0.4.0"
+ 
+ 
+ def test_application_metadata_uses_central_settings():

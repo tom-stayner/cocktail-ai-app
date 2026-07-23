@@ -13,7 +13,10 @@ The current application provides a small, local FastAPI foundation with:
 - JSON cocktail CRUD endpoints and server-rendered HTML views
 - DynamoDB-backed cocktail records, including ingredient lists
 - a service layer separating route handlers from CRUD logic
-- a health endpoint, structured logging, regression tests, and local setup documentation
+- separate liveness and readiness endpoints with DynamoDB dependency checks
+- centralised validated configuration and named application logging
+- regression and resilience tests covering validation and dependency failures
+- aligned local setup, architecture, and operational documentation
 
 This phase establishes the engineering baseline; it is not yet a hosted, user-facing cloud platform. See the [architecture overview](architecture/overview.md) for the current system shape.
 
@@ -56,4 +59,3 @@ These ideas should be assessed against user value, engineering complexity, data 
 Across all milestones, the project aims to demonstrate clean, maintainable architecture; AWS best practices; thoughtful AI integration; automated testing; clear documentation; and continuous improvement. Detailed implementation tasks belong in issue tracking or milestone plans, not in this roadmap.
 
 See [AWS architecture](architecture/aws.md), [deployment](architecture/deployment.md), and [AGENTS.md](../AGENTS.md) for related guidance.
-   

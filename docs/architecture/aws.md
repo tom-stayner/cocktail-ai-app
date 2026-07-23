@@ -5,8 +5,11 @@ The current implementation does not yet use a full AWS deployment. The applicati
 ## Current Implementation
 
 - The backend uses DynamoDB as its persistence layer.
-- Configuration is provided through the `AWS_REGION` and `TABLE_NAME` environment variables.
+- DynamoDB settings are loaded through the central validated configuration module.
 - The application runs locally and uses the standard AWS credential provider chain to access DynamoDB. It does not currently configure a local DynamoDB endpoint.
+- The readiness endpoint calls DynamoDB `DescribeTable`; the runtime AWS identity therefore requires `dynamodb:DescribeTable` in addition to permissions needed for cocktail CRUD operations.
+
+The repository does not currently provision or modify IAM policies. Local developer credentials and any future deployment role must supply the required permissions through the normal AWS operating model.
 
 ## Future Direction
 
