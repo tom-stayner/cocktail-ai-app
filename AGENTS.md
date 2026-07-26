@@ -83,6 +83,7 @@ When updating documentation:
 
 Small improvements that improve developer or user experience are encouraged when they:
 
+- remain within the approved scope
 - are low risk
 - are easy to verify
 - improve overall project quality
@@ -144,3 +145,115 @@ When preparing a project release:
 - Update version and last-updated metadata on all affected Current Implementation diagrams.
 - Verify documentation continues to distinguish Current Implementation from Future Direction.
 - Ensure documentation and source code remain aligned before release.
+
+## Git and Delivery Workflow
+
+This repository uses short-lived branches for implementation work.
+
+### Branching
+
+Before modifying files for an approved implementation step:
+
+1. Confirm the previous approved implementation step is present on `main`.
+2. Confirm the working tree is clean.
+3. Switch to `main`.
+4. Update `main` using a fast-forward-only pull.
+5. Create a new feature branch from the updated `main`.
+6. Confirm the active branch before modifying files.
+
+Branch naming convention:
+
+```text
+feature/<version>-step-<number>-<short-description>
+```
+
+Example:
+
+```text
+feature/v0.5.0-step-3-dependency-separation
+```
+
+If `main` has diverged from its remote branch, the working tree is not clean, or the previous approved work is not present, stop and report the condition.
+
+Do not merge, rebase, reset, discard changes, or otherwise alter repository history without explicit Product Owner approval.
+
+Do not:
+
+- implement approved work directly on `main`
+- create future implementation branches in advance
+- reuse a completed step branch for a later step
+- create a long-lived `develop` branch unless explicitly requested
+- create release or hotfix branches unless explicitly requested
+
+### Implementation Authority
+
+Codex may:
+
+- inspect repository status, history and diffs
+- create the approved feature branch
+- modify files within the approved scope
+- run tests and quality checks
+- prepare a proposed commit message
+- provide the actual diff for review
+
+Codex must not, unless explicitly authorised by the Product Owner:
+
+- commit changes
+- push branches
+- open pull requests
+- merge branches
+- delete local or remote branches
+- create, move or delete tags
+- publish releases
+- rewrite repository history
+
+### Scope Control
+
+Implement only the approved implementation brief.
+
+If additional work is discovered:
+
+- report it separately
+- classify it as required, recommended or optional
+- do not include it without approval unless it is strictly necessary to keep the approved change correct and verifiable
+- clearly disclose any necessary scope expansion in the completion report
+
+Avoid unrelated:
+
+- formatting churn
+- dependency upgrades
+- renaming
+- refactoring
+- documentation rewrites
+- cleanup
+
+### Verification Before Handback
+
+Before presenting work for review:
+
+1. Run the verification commands specified in the implementation brief.
+2. Run the repository's established test, lint and formatting checks where applicable.
+3. Check `git status`.
+4. Run `git diff --check`.
+5. Review the complete diff for accidental, generated or unrelated changes.
+6. Confirm no commit, push, merge, tag or release was performed unless explicitly authorised.
+
+### Completion Report
+
+Every implementation handback must include:
+
+1. Current branch name.
+2. Files changed.
+3. Implementation summary.
+4. Behaviour changed, including confirmation when behaviour is intentionally unchanged.
+5. Significant design decisions.
+6. Commands run.
+7. Test, lint, formatting and other verification results.
+8. Warnings, assumptions and unresolved risks.
+9. Any discovered work that was excluded as out of scope.
+10. Confirmation that no unauthorised commit, push, pull request, merge, branch deletion, tag or release was performed.
+11. The actual diff, or a complete diff file suitable for review.
+
+Codex may state that implementation and verification are complete, but must not describe the work as approved, accepted, merged or released.
+
+Those decisions remain with the Product Owner following architectural review.

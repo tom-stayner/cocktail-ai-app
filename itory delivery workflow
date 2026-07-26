@@ -1,0 +1,128 @@
+[1mdiff --git a/AGENTS.md b/AGENTS.md[m
+[1mindex 5ed1509..e433006 100644[m
+[1m--- a/AGENTS.md[m
+[1m+++ b/AGENTS.md[m
+[36m@@ -83,6 +83,7 @@[m [mWhen updating documentation:[m
+ [m
+ Small improvements that improve developer or user experience are encouraged when they:[m
+ [m
+[32m+[m[32m- remain within the approved scope[m
+ - are low risk[m
+ - are easy to verify[m
+ - improve overall project quality[m
+[36m@@ -144,3 +145,115 @@[m [mWhen preparing a project release:[m
+ - Update version and last-updated metadata on all affected Current Implementation diagrams.[m
+ - Verify documentation continues to distinguish Current Implementation from Future Direction.[m
+ - Ensure documentation and source code remain aligned before release.[m
+[32m+[m
+[32m+[m[32m## Git and Delivery Workflow[m
+[32m+[m
+[32m+[m[32mThis repository uses short-lived branches for implementation work.[m
+[32m+[m
+[32m+[m[32m### Branching[m
+[32m+[m
+[32m+[m[32mBefore modifying files for an approved implementation step:[m
+[32m+[m
+[32m+[m[32m1. Confirm the previous approved implementation step is present on `main`.[m
+[32m+[m[32m2. Confirm the working tree is clean.[m
+[32m+[m[32m3. Switch to `main`.[m
+[32m+[m[32m4. Update `main` using a fast-forward-only pull.[m
+[32m+[m[32m5. Create a new feature branch from the updated `main`.[m
+[32m+[m[32m6. Confirm the active branch before modifying files.[m
+[32m+[m
+[32m+[m[32mBranch naming convention:[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mfeature/<version>-step-<number>-<short-description>[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mExample:[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mfeature/v0.5.0-step-3-dependency-separation[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mIf `main` has diverged from its remote branch, the working tree is not clean, or the previous approved work is not present, stop and report the condition.[m
+[32m+[m
+[32m+[m[32mDo not merge, rebase, reset, discard changes, or otherwise alter repository history without explicit Product Owner approval.[m
+[32m+[m
+[32m+[m[32mDo not:[m
+[32m+[m
+[32m+[m[32m- implement approved work directly on `main`[m
+[32m+[m[32m- create future implementation branches in advance[m
+[32m+[m[32m- reuse a completed step branch for a later step[m
+[32m+[m[32m- create a long-lived `develop` branch unless explicitly requested[m
+[32m+[m[32m- create release or hotfix branches unless explicitly requested[m
+[32m+[m
+[32m+[m[32m### Implementation Authority[m
+[32m+[m
+[32m+[m[32mCodex may:[m
+[32m+[m
+[32m+[m[32m- inspect repository status, history and diffs[m
+[32m+[m[32m- create the approved feature branch[m
+[32m+[m[32m- modify files within the approved scope[m
+[32m+[m[32m- run tests and quality checks[m
+[32m+[m[32m- prepare a proposed commit message[m
+[32m+[m[32m- provide the actual diff for review[m
+[32m+[m
+[32m+[m[32mCodex must not, unless explicitly authorised by the Product Owner:[m
+[32m+[m
+[32m+[m[32m- commit changes[m
+[32m+[m[32m- push branches[m
+[32m+[m[32m- open pull requests[m
+[32m+[m[32m- merge branches[m
+[32m+[m[32m- delete local or remote branches[m
+[32m+[m[32m- create, move or delete tags[m
+[32m+[m[32m- publish releases[m
+[32m+[m[32m- rewrite repository history[m
+[32m+[m
+[32m+[m[32m### Scope Control[m
+[32m+[m
+[32m+[m[32mImplement only the approved implementation brief.[m
+[32m+[m
+[32m+[m[32mIf additional work is discovered:[m
+[32m+[m
+[32m+[m[32m- report it separately[m
+[32m+[m[32m- classify it as required, recommended or optional[m
+[32m+[m[32m- do not include it without approval unless it is strictly necessary to keep the approved change correct and verifiable[m
+[32m+[m[32m- clearly disclose any necessary scope expansion in the completion report[m
+[32m+[m
+[32m+[m[32mAvoid unrelated:[m
+[32m+[m
+[32m+[m[32m- formatting churn[m
+[32m+[m[32m- dependency upgrades[m
+[32m+[m[32m- renaming[m
+[32m+[m[32m- refactoring[m
+[32m+[m[32m- documentation rewrites[m
+[32m+[m[32m- cleanup[m
+[32m+[m
+[32m+[m[32m### Verification Before Handback[m
+[32m+[m
+[32m+[m[32mBefore presenting work for review:[m
+[32m+[m
+[32m+[m[32m1. Run the verification commands specified in the implementation brief.[m
+[32m+[m[32m2. Run the repository's established test, lint and formatting checks where applicable.[m
+[32m+[m[32m3. Check `git status`.[m
+[32m+[m[32m4. Run `git diff --check`.[m
+[32m+[m[32m5. Review the complete diff for accidental, generated or unrelated changes.[m
+[32m+[m[32m6. Confirm no commit, push, merge, tag or release was performed unless explicitly authorised.[m
+[32m+[m
+[32m+[m[32m### Completion Report[m
+[32m+[m
+[32m+[m[32mEvery implementation handback must include:[m
+[32m+[m
+[32m+[m[32m1. Current branch name.[m
+[32m+[m[32m2. Files changed.[m
+[32m+[m[32m3. Implementation summary.[m
+[32m+[m[32m4. Behaviour changed, including confirmation when behaviour is intentionally unchanged.[m
+[32m+[m[32m5. Significant design decisions.[m
+[32m+[m[32m6. Commands run.[m
+[32m+[m[32m7. Test, lint, formatting and other verification results.[m
+[32m+[m[32m8. Warnings, assumptions and unresolved risks.[m
+[32m+[m[32m9. Any discovered work that was excluded as out of scope.[m
+[32m+[m[32m10. Confirmation that no unauthorised commit, push, pull request, merge, branch deletion, tag or release was performed.[m
+[32m+[m[32m11. The actual diff, or a complete diff file suitable for review.[m
+[32m+[m
+[32m+[m[32mCodex may state that implementation and verification are complete, but must not describe the work as approved, accepted, merged or released.[m
+[32m+[m
+[32m+[m[32mThose decisions remain with the Product Owner following architectural review.[m
