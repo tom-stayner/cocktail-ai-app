@@ -12,6 +12,8 @@ and this project follows
 ### Changed
 
 - Replaced local file-based application logging with console logging compatible with AWS Lambda and CloudWatch.
+- Separated application runtime dependencies from development and test tooling.
+- Runtime installations now use `requirements.txt`, while contributor environments use `requirements-dev.txt`.
 
 ---
 

@@ -12,10 +12,14 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
 ## Install and Run
 
 1. Create and activate a virtual environment.
-2. Install dependencies with `pip install -r requirements.txt`.
+2. Install runtime and development dependencies with `python -m pip install -r requirements-dev.txt`.
 3. Copy the environment template with `Copy-Item .env.example .env` on Windows or `cp .env.example .env` on Linux or macOS.
 4. Review the safe defaults in `.env` and change them when needed for your environment.
 5. From the project root, start the application with `uvicorn src.main:app --reload`.
+
+`requirements.txt` contains only application runtime dependencies for production or deployment packaging. `requirements-dev.txt` includes those runtime dependencies through `-r requirements.txt`, plus the test, linting, and formatting tools used by contributors.
+
+For a runtime-only installation, use `python -m pip install -r requirements.txt`.
 
 ## Application Settings
 

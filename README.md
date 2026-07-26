@@ -20,10 +20,12 @@ From the project root, activate a virtual environment, install dependencies, cop
 
 ```powershell
 .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
 uvicorn src.main:app --reload
 ```
+
+`requirements-dev.txt` includes the runtime dependencies plus testing and code-quality tools. Runtime or deployment-only environments should install `requirements.txt`.
 
 The application is available at `http://localhost:8000`; Swagger UI is available at `http://localhost:8000/docs`.
 

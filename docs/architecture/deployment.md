@@ -19,4 +19,6 @@ The application currently runs locally for development; it is not deployed to AW
 
 The next deployment milestone is to move the service into a hosted AWS environment while preserving the existing FastAPI structure and service layer.
 
+Future Lambda deployment packages should install from `requirements.txt` so they contain only application runtime dependencies. Contributor and CI environments should install `requirements-dev.txt`; development tools should not be included in Lambda artefacts.
+
 See [aws.md](aws.md) for the AWS architecture direction and [local setup](../setup.md) for local setup.
