@@ -4,15 +4,25 @@ A cocktail recipe application built with Python, FastAPI, and AWS DynamoDB. It c
 
 Cocktail AI App is a Cloud & AI Engineering portfolio project focused on production-quality engineering practices while evolving toward a cloud-native, AI-powered cocktail companion.
 
+**Current version:** 0.5.0 — Serverless Application Readiness
+
 ## Current Capabilities
 
 - FastAPI JSON API and server-rendered HTML views
 - Cocktail CRUD operations backed by DynamoDB
 - Separate process-liveness and DynamoDB-readiness health endpoints
 - Centralised, validated environment configuration
-- Service-owned logging through the named `cocktail_api` logger
+- Lambda-compatible console logging through the named `cocktail_api` logger
+- Separate runtime and contributor dependency sets
+- Mangum integration through `src.lambda_handler.handler`
+- Deterministic, structurally audited Lambda ZIP packaging
+- GitHub Actions quality checks and clean Linux packaged-handler verification
 - Regression and resilience tests covering successful and failure paths
 - Interactive Swagger API documentation
+
+The application can produce a validated Lambda deployment package, but AWS Lambda,
+API Gateway and supporting hosting infrastructure have not been provisioned. There
+is no deployed public cloud endpoint.
 
 ## Getting Started
 
@@ -30,6 +40,9 @@ uvicorn src.main:app --reload
 The application is available at `http://localhost:8000`; Swagger UI is available at `http://localhost:8000/docs`.
 
 For prerequisites, AWS credentials, environment configuration, and available endpoints, see the [local setup guide](docs/setup.md).
+
+For the current packaging boundary and future deployment direction, see the
+[deployment architecture](docs/architecture/deployment.md).
 
 ## Documentation
 

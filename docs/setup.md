@@ -6,8 +6,8 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
 
 - Python 3.14+
 - A virtual environment
-- AWS credentials available through the standard AWS credential provider chain
-- Access to the DynamoDB table configured for the application
+- AWS credentials available through the standard AWS credential provider chain when running DynamoDB-backed application routes
+- Access to the configured DynamoDB table when exercising persistence or readiness locally
 
 ## Install and Run
 
@@ -20,6 +20,20 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
 `requirements.txt` contains only application runtime dependencies for production or deployment packaging. `requirements-dev.txt` includes those runtime dependencies through `-r requirements.txt`, plus the test, linting, and formatting tools used by contributors.
 
 For a runtime-only installation, use `python -m pip install -r requirements.txt`.
+
+## Local Quality Checks
+
+The local quality workflow uses the contributor dependencies:
+
+```text
+python -m pytest
+python -m ruff check .
+python -m black --check .
+```
+
+GitHub Actions repeats these checks on pull requests and `main`. Tests and Lambda
+package build/audit operations do not require AWS credentials; tests isolate AWS
+interactions and packaging downloads dependencies without invoking AWS APIs.
 
 ## Lambda Package Build
 
@@ -47,7 +61,7 @@ environment.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `APP_NAME` | `Tom's Cocktail API` | FastAPI service name |
-| `APP_VERSION` | `0.4.0` | Current application version |
+| `APP_VERSION` | `0.5.0` | Current application version |
 | `APP_ENV` | `development` | Runtime environment |
 | `AWS_REGION` | `ap-southeast-2` | AWS region |
 | `TABLE_NAME` | `Cocktails` | DynamoDB table |

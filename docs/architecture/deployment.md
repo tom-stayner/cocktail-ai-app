@@ -14,11 +14,11 @@ The application currently runs locally for development; it is not deployed to AW
 - `/health` preserves the backward-compatible basic response, `/health/live` reports process liveness, and `/health/ready` checks DynamoDB availability.
 - The health endpoints are suitable for future container or load-balancer probes, but are not currently wired into deployment infrastructure.
 - Read and HTML routes remain callable, while cocktail POST, PUT and DELETE routes return HTTP 403 by default because `ALLOW_MUTATIONS` is fail-closed.
-- The application is not yet packaged for cloud deployment.
+- A deterministic, audited Lambda ZIP can be built locally and in CI; no hosting infrastructure is provisioned.
 
 ## Lambda Adapter Boundary
 
-Mangum provides the ASGI-to-Lambda adapter around the existing FastAPI application. The future Lambda handler reference is `src.lambda_handler.handler`, and API Gateway HTTP API payload format `2.0` is the supported and tested event shape.
+Mangum provides the ASGI-to-Lambda adapter around the existing FastAPI application. The Lambda handler reference is `src.lambda_handler.handler`, and API Gateway HTTP API payload format `2.0` is the supported and tested event shape.
 
 Local development continues to use `src.main:app` through Uvicorn. This adapter does not create or deploy a Lambda function, API Gateway, IAM role, or any other AWS infrastructure.
 
@@ -53,8 +53,13 @@ or deployment infrastructure.
 
 ## Future Direction
 
-The next deployment milestone is to move the service into a hosted AWS environment while preserving the existing FastAPI structure and service layer.
+The v0.6.0 deployment milestone is to move the service into a hosted AWS
+environment while preserving the existing FastAPI structure and service layer. It
+will require an approved API Gateway/Lambda topology, least-privilege IAM,
+CloudWatch operational configuration and infrastructure as code.
 
-Future Lambda deployment packages should install from `requirements.txt` so they contain only application runtime dependencies. Contributor and CI environments should install `requirements-dev.txt`; development tools should not be included in Lambda artefacts.
+The existing package builder installs from `requirements.txt` so the ZIP contains
+runtime dependencies only. Contributor and quality environments install
+`requirements-dev.txt`; development tools are excluded from Lambda artefacts.
 
 See [aws.md](aws.md) for the AWS architecture direction and [local setup](../setup.md) for local setup.

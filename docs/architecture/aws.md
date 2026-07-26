@@ -1,6 +1,7 @@
 # AWS Architecture
 
-The current implementation does not yet use a full AWS deployment. The application is designed to be compatible with an AWS-hosted future state.
+The current implementation is ready to package for AWS Lambda but does not use
+provisioned AWS hosting infrastructure or expose a deployed public endpoint.
 
 ## Current Implementation
 
@@ -8,13 +9,23 @@ The current implementation does not yet use a full AWS deployment. The applicati
 - DynamoDB settings are loaded through the central validated configuration module.
 - The application runs locally and uses the standard AWS credential provider chain to access DynamoDB. It does not currently configure a local DynamoDB endpoint.
 - The readiness endpoint calls DynamoDB `DescribeTable`; the runtime AWS identity therefore requires `dynamodb:DescribeTable` in addition to permissions needed for cocktail CRUD operations.
+- Mangum exposes the FastAPI application through `src.lambda_handler.handler` for tested API Gateway HTTP API payload-v2 events.
+- The repository builds and audits a CPython 3.14 Linux x86-64 Lambda ZIP containing runtime dependencies and static assets.
+- GitHub Actions validates quality and invokes the extracted packaged handler in an isolated Linux environment without AWS credentials.
 
-The repository does not currently provision or modify IAM policies. Local developer credentials and any future deployment role must supply the required permissions through the normal AWS operating model.
+The repository does not currently provision Lambda, API Gateway, IAM roles,
+CloudWatch configuration or other hosting resources. Local developer credentials
+and any future deployment role must supply DynamoDB permissions through the normal
+AWS operating model.
 
 ## Future Direction
 
-A future version is expected to use:
-- AWS Lambda or container-based hosting for the API
+A future deployment is expected to address:
+- AWS Lambda hosting for the validated application package
+- Amazon API Gateway integration
+- least-privilege IAM execution roles
+- CloudWatch logging, retention and operational configuration
+- infrastructure as code
 - Amazon DynamoDB as the primary data store
 - Amazon Cognito for authentication
 - Amazon S3 for image storage if media features are introduced

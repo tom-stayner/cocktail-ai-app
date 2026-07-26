@@ -6,21 +6,37 @@ Cocktail AI App is intended to become a cloud-native, AI-powered cocktail compan
 
 The product will evolve incrementally. Each stage should preserve maintainability, testing, documentation, and production-quality engineering practices.
 
-## Current Implementation — Core Platform
+## Current Implementation — v0.5.0 Serverless Application Readiness
 
-The current application provides a small, local FastAPI foundation with:
+The current application provides a tested FastAPI foundation that runs locally and
+is ready to package for AWS Lambda:
 
 - JSON cocktail CRUD endpoints and server-rendered HTML views
 - DynamoDB-backed cocktail records, including ingredient lists
 - a service layer separating route handlers from CRUD logic
 - separate liveness and readiness endpoints with DynamoDB dependency checks
-- centralised validated configuration and named application logging
+- centralised validated configuration and console-based structured logging
+- separated runtime and contributor dependency sets
+- a Mangum handler for API Gateway HTTP API payload-v2 events
+- deterministic Linux x86-64 Lambda ZIP construction and structural auditing
+- GitHub Actions quality checks and isolated Linux packaged-handler smoke tests
 - regression and resilience tests covering validation and dependency failures
 - aligned local setup, architecture, and operational documentation
 
-This phase establishes the engineering baseline; it is not yet a hosted, user-facing cloud platform. See the [architecture overview](architecture/overview.md) for the current system shape.
+The v0.5.0 release completes application-level serverless readiness. It does not
+provision Lambda, API Gateway or other hosting infrastructure and does not expose a
+deployed public endpoint. See the [architecture overview](architecture/overview.md)
+for the current system shape.
 
 ## Planned Milestones
+
+### v0.6.0 — AWS Deployment
+
+Deploy the validated application package through an approved AWS architecture.
+Expected concerns include Lambda, API Gateway, least-privilege IAM execution roles,
+CloudWatch operational configuration and infrastructure as code. The final service
+selection, topology and deployment process remain subject to architectural review;
+no AWS hosting resources are currently provisioned.
 
 ### User Experience
 
@@ -33,10 +49,6 @@ Introduce AI where it makes cocktail exploration more useful, rather than replac
 ### Accounts and Personalisation
 
 Enable an individual experience with authentication, profiles, saved recipes and collections, preferences, and recently viewed cocktails. Amazon Cognito is the current anticipated authentication service, subject to architectural review when this milestone is started.
-
-### Cloud Platform
-
-Evolve the local application into a production-quality AWS deployment while retaining the benefits of the current service boundaries. The likely direction is a serverless platform using services such as API Gateway, Lambda, DynamoDB, Cognito, CloudFront, S3, CloudWatch, and CI/CD automation. Service selection and deployment topology will be decided through implementation-time architecture work.
 
 ### Insights
 

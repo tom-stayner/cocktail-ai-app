@@ -1,5 +1,34 @@
 # Engineering Log
 
+## 2026-07-27 — v0.5.0 Serverless Application Readiness
+
+### Context
+
+The application needed a verifiable Lambda execution and packaging boundary before
+AWS hosting work could begin.
+
+### Decisions
+
+- Kept the existing FastAPI application and added Mangum as its Lambda adapter.
+- Separated runtime dependencies from contributor tooling and retained console-only logging suitable for Lambda capture.
+- Added deterministic Linux Lambda ZIP construction with independent structural and safety auditing.
+- Added GitHub Actions quality checks and an isolated Linux packaged-handler smoke test covering health and static assets.
+- Aligned application metadata and documentation on v0.5.0.
+
+### Trade-offs
+
+- Serverless application readiness is intentionally separate from infrastructure deployment.
+- The generated package is validated against API Gateway payload-v2 events, but no Lambda function, API Gateway, IAM role, CloudWatch configuration or public endpoint exists yet.
+- Local Windows hosts can build the Linux-target package but rely on Linux CI for native packaged-handler execution.
+
+### Outcome
+
+The application has an auditable serverless delivery artefact and automated Linux
+verification. Provisioning, least-privilege permissions, observability and
+infrastructure as code remain v0.6.0 deployment work.
+
+---
+
 ## 2026-07-23 — v0.4.0 Operational Readiness
 
 ### Context
