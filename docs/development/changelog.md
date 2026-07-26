@@ -9,11 +9,17 @@ and this project follows
 
 ## [0.5.0] - Unreleased
 
+### Added
+
+- Added Mangum as the runtime ASGI-to-Lambda adapter with the dedicated `src.lambda_handler.handler` entry point.
+- Added API Gateway HTTP API payload-v2 adapter coverage for health, static stylesheet and favicon responses.
+
 ### Changed
 
 - Replaced local file-based application logging with console logging compatible with AWS Lambda and CloudWatch.
 - Separated application runtime dependencies from development and test tooling.
 - Runtime installations now use `requirements.txt`, while contributor environments use `requirements-dev.txt`.
+- Preserved local Uvicorn execution through `src.main:app` alongside the Lambda adapter.
 
 ---
 

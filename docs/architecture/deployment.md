@@ -15,6 +15,12 @@ The application currently runs locally for development; it is not deployed to AW
 - The health endpoints are suitable for future container or load-balancer probes, but are not currently wired into deployment infrastructure.
 - The application is not yet packaged for cloud deployment.
 
+## Lambda Adapter Boundary
+
+Mangum provides the ASGI-to-Lambda adapter around the existing FastAPI application. The future Lambda handler reference is `src.lambda_handler.handler`, and API Gateway HTTP API payload format `2.0` is the supported and tested event shape.
+
+Local development continues to use `src.main:app` through Uvicorn. This adapter does not create or deploy a Lambda function, API Gateway, IAM role, or any other AWS infrastructure.
+
 ## Future Direction
 
 The next deployment milestone is to move the service into a hosted AWS environment while preserving the existing FastAPI structure and service layer.
