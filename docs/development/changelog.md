@@ -13,6 +13,7 @@ and this project follows
 
 - Added Mangum as the runtime ASGI-to-Lambda adapter with the dedicated `src.lambda_handler.handler` entry point.
 - Added API Gateway HTTP API payload-v2 adapter coverage for health, static stylesheet and favicon responses.
+- Added Uvicorn and Lambda-path coverage for fail-closed cocktail mutation safeguards.
 
 ### Changed
 
@@ -20,6 +21,9 @@ and this project follows
 - Separated application runtime dependencies from development and test tooling.
 - Runtime installations now use `requirements.txt`, while contributor environments use `requirements-dev.txt`.
 - Preserved local Uvicorn execution through `src.main:app` alongside the Lambda adapter.
+- Escaped stored cocktail content at server-rendered HTML boundaries while preserving original JSON values.
+- Cocktail create, update and delete routes now return HTTP 403 by default through the fail-closed `ALLOW_MUTATIONS` setting.
+- Trusted local and test environments can explicitly set `ALLOW_MUTATIONS=true` to preserve existing mutation behaviour.
 
 ---
 

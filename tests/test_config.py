@@ -11,6 +11,7 @@ ENVIRONMENT_VARIABLES = (
     "AWS_REGION",
     "TABLE_NAME",
     "LOG_LEVEL",
+    "ALLOW_MUTATIONS",
 )
 
 
@@ -33,6 +34,7 @@ def test_load_settings_uses_safe_defaults(monkeypatch):
         aws_region=config.DEFAULT_AWS_REGION,
         table_name=config.DEFAULT_TABLE_NAME,
         log_level=config.DEFAULT_LOG_LEVEL,
+        allow_mutations=config.DEFAULT_ALLOW_MUTATIONS,
     )
 
 
@@ -44,6 +46,7 @@ def test_load_settings_uses_normalised_environment_overrides(monkeypatch):
     monkeypatch.setenv("AWS_REGION", " us-east-1 ")
     monkeypatch.setenv("TABLE_NAME", " TestCocktails ")
     monkeypatch.setenv("LOG_LEVEL", " debug ")
+    monkeypatch.setenv("ALLOW_MUTATIONS", " TRUE ")
 
     loaded_settings = config.load_settings()
 
@@ -54,6 +57,7 @@ def test_load_settings_uses_normalised_environment_overrides(monkeypatch):
         aws_region="us-east-1",
         table_name="TestCocktails",
         log_level="DEBUG",
+        allow_mutations=True,
     )
 
 
@@ -72,6 +76,26 @@ def test_load_settings_rejects_invalid_log_level(monkeypatch, value):
     monkeypatch.setenv("LOG_LEVEL", value)
 
     with pytest.raises(config.ConfigurationError, match="LOG_LEVEL"):
+        config.load_settings()
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("true", True), ("TRUE", True), ("false", False), ("FALSE", False)],
+)
+def test_load_settings_parses_allow_mutations(monkeypatch, value, expected):
+    isolate_environment(monkeypatch)
+    monkeypatch.setenv("ALLOW_MUTATIONS", value)
+
+    assert config.load_settings().allow_mutations is expected
+
+
+@pytest.mark.parametrize("value", ["yes", "1", "on", ""])
+def test_load_settings_rejects_invalid_allow_mutations(monkeypatch, value):
+    isolate_environment(monkeypatch)
+    monkeypatch.setenv("ALLOW_MUTATIONS", value)
+
+    with pytest.raises(config.ConfigurationError, match="ALLOW_MUTATIONS"):
         config.load_settings()
 
 

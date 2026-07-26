@@ -10,6 +10,7 @@ DEFAULT_APP_ENV = "development"
 DEFAULT_AWS_REGION = "ap-southeast-2"
 DEFAULT_TABLE_NAME = "Cocktails"
 DEFAULT_LOG_LEVEL = "INFO"
+DEFAULT_ALLOW_MUTATIONS = False
 
 SUPPORTED_APP_ENVS = {"development", "test", "production"}
 SUPPORTED_LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
@@ -27,6 +28,7 @@ class Settings:
     aws_region: str
     table_name: str
     log_level: str
+    allow_mutations: bool
 
 
 def _read_required(variable: str, default: str) -> str:
@@ -57,6 +59,23 @@ def _validate_log_level(value: str) -> str:
     return normalised
 
 
+def _read_boolean(variable: str, default: bool) -> bool:
+    value = os.getenv(variable)
+
+    if value is None:
+        return default
+
+    normalised = value.strip().lower()
+
+    if normalised == "true":
+        return True
+
+    if normalised == "false":
+        return False
+
+    raise ConfigurationError(f"Invalid {variable}: {normalised}")
+
+
 def load_settings() -> Settings:
     load_dotenv()
 
@@ -66,6 +85,7 @@ def load_settings() -> Settings:
     aws_region = _read_required("AWS_REGION", DEFAULT_AWS_REGION)
     table_name = _read_required("TABLE_NAME", DEFAULT_TABLE_NAME)
     log_level = _validate_log_level(_read_required("LOG_LEVEL", DEFAULT_LOG_LEVEL))
+    allow_mutations = _read_boolean("ALLOW_MUTATIONS", DEFAULT_ALLOW_MUTATIONS)
 
     return Settings(
         app_name=app_name,
@@ -74,6 +94,7 @@ def load_settings() -> Settings:
         aws_region=aws_region,
         table_name=table_name,
         log_level=log_level,
+        allow_mutations=allow_mutations,
     )
 
 
