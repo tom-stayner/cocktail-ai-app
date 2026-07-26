@@ -17,23 +17,31 @@ This document describes the collaboration roles used for AI-assisted engineering
 | Tool | Current use |
 |------|-------------|
 | **GitHub** | Version control, issues, discussions, and releases |
-| **Pytest** | Regression verification |
-| **Ruff / Black** | Installed development tools; automated enforcement is not yet configured |
+| **Pytest** | Local regression verification and GitHub Actions test execution |
+| **Ruff / Black** | Local linting and formatting checks repeated by GitHub Actions |
+| **Lambda package checks** | Linux package build, structural audit, and isolated packaged-handler smoke verification in CI |
 
 ## Collaboration Loop
 
 - **Status:** Current Development Workflow
-- **Version:** 0.3.0
-- **Last Updated:** 2026-07-14
+- **Version:** 0.5.0
+- **Last Updated:** 2026-07-27
 
 ```mermaid
 flowchart LR
     PO["Product Owner"] --> ARCH["Architecture and Design"]
     ARCH --> ENG["Implementation"]
-    ENG --> REVIEW["Testing and Review"]
-    REVIEW --> PO
+    ENG --> LOCAL["Local pytest, Ruff and Black"]
+    LOCAL --> REVIEW["Architecture and Actual-Diff Review"]
+    REVIEW --> CI["GitHub Actions Quality and Lambda Package Verification"]
+    CI --> PO
     PO --> RELEASE["Commit and Release"]
 ```
+
+Automated verification supports review but does not replace architectural
+assessment, actual-diff inspection or Product Owner authorization. Commits, pushes,
+pull requests, merges, tags and releases remain controlled by the approval workflow
+defined in `AGENTS.md`.
 
 ## Related Documentation
 

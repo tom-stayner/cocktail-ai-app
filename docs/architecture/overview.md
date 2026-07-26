@@ -14,12 +14,18 @@ The project is currently a Python FastAPI application with:
 - DynamoDB as the persistence layer
 - regression and resilience tests
 - static CSS and a browser favicon served by the application
+- a Mangum Lambda adapter for API Gateway HTTP API payload-v2 events
+- deterministic Linux Lambda package construction and structural auditing
+- GitHub Actions quality checks and isolated packaged-handler smoke verification
+
+The Lambda integration and package are implemented and tested, but Lambda, API
+Gateway and supporting AWS hosting infrastructure are not provisioned.
 
 ## Current Architecture Diagram
 
 - **Status:** Current Implementation
-- **Version:** 0.4.0
-- **Last Updated:** 2026-07-23
+- **Version:** 0.5.0
+- **Last Updated:** 2026-07-27
 
 ```mermaid
 flowchart TD
@@ -27,6 +33,8 @@ flowchart TD
     Browser["🌐 Browser / API Client"]
 
     Browser --> FastAPI["FastAPI Route Handlers"]
+    Events["API Gateway v2 Events (Tested)"] --> Mangum["Mangum Lambda Handler"]
+    Mangum --> FastAPI
 
     FastAPI --> Service["Cocktail Service"]
     FastAPI --> Health["Health Service"]
@@ -47,6 +55,9 @@ flowchart TD
     Tests["Regression and Resilience Tests"] -.-> FastAPI
     Tests -.-> Service
     Tests -.-> Health
+    CI["GitHub Actions"] -.-> Tests
+    CI -.-> Package["Lambda Package Build and Audit"]
+    Package -.-> Mangum
 ```
 
 ## Future Direction
@@ -85,8 +96,8 @@ Image --> S3["Amazon S3"]
 ## Project Structure
 
 - **Status:** Current Implementation
-- **Version:** 0.4.0
-- **Last Updated:** 2026-07-23
+- **Version:** 0.5.0
+- **Last Updated:** 2026-07-27
 
 ```mermaid
 flowchart LR
@@ -98,6 +109,8 @@ main --> health["health_service.py"]
 main --> config["config.py"]
 main --> models["models.py"]
 main --> logging["logging_config.py"]
+lambda["lambda_handler.py"] --> main
+package["scripts/lambda_package.py"] --> main
 
 services --> cocktail["cocktail_service.py"]
 cocktail --> database["database.py"]
@@ -108,6 +121,8 @@ tests["tests/"] --> main
 tests --> cocktail
 tests --> health
 tests --> config
+tests --> lambda
+tests --> package
 ```
 
 ## Main Components
@@ -119,6 +134,9 @@ tests --> config
 - DynamoDB table: persistent storage for cocktail records
 - Logging: named application logging with severity and ownership policies
 - Tests: regression and resilience coverage without live AWS calls
+- Lambda handler: Mangum adapter around the existing FastAPI application
+- Package tooling: deterministic Linux ZIP construction and independent structural auditing
+- Continuous integration: pytest, Ruff, Black and clean Linux packaged-handler smoke verification
 
 ## Documentation Map
 

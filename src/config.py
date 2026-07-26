@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 DEFAULT_APP_NAME = "Tom's Cocktail API"
-DEFAULT_APP_VERSION = "0.4.0"
+DEFAULT_APP_VERSION = "0.5.0"
 DEFAULT_APP_ENV = "development"
 DEFAULT_AWS_REGION = "ap-southeast-2"
 DEFAULT_TABLE_NAME = "Cocktails"

@@ -7,7 +7,9 @@ The format is based on the principles of
 and this project follows
 [Semantic Versioning](https://semver.org/).
 
-## [0.5.0] - Unreleased
+## [0.5.0] - 2026-07-27
+
+**v0.5.0 — Serverless Application Readiness**
 
 ### Added
 
@@ -18,6 +20,7 @@ and this project follows
 - Added stable Lambda ZIP construction using runtime-only Linux x86-64 dependencies.
 - Added structural and security auditing for Lambda package contents and paths.
 - Added clean packaged-handler smoke tests covering health, stylesheet and favicon responses.
+- Added release documentation aligned with the v0.5.0 application metadata.
 
 ### Changed
 
@@ -28,6 +31,11 @@ and this project follows
 - Escaped stored cocktail content at server-rendered HTML boundaries while preserving original JSON values.
 - Cocktail create, update and delete routes now return HTTP 403 by default through the fail-closed `ALLOW_MUTATIONS` setting.
 - Trusted local and test environments can explicitly set `ALLOW_MUTATIONS=true` to preserve existing mutation behaviour.
+- Application configuration and console logging now support both local Uvicorn and Lambda execution environments.
+
+### Deployment
+
+- The application is ready to package and validate for AWS Lambda, but this release does not provision or deploy Lambda, API Gateway, IAM, CloudWatch or other hosting infrastructure.
 
 ---
 

@@ -39,7 +39,7 @@ def test_liveness_endpoint_returns_healthy():
     assert response.json() == {
         "status": "healthy",
         "service": app.title,
-        "version": app.version,
+        "version": "0.5.0",
     }
 
 
@@ -164,12 +164,13 @@ def test_openapi_version_matches_current_release():
     response = client.get("/openapi.json")
 
     assert response.status_code == 200
-    assert response.json()["info"]["version"] == "0.4.0"
+    assert response.json()["info"]["version"] == "0.5.0"
 
 
 def test_application_metadata_uses_central_settings():
     assert app.title == settings.app_name
     assert app.version == settings.app_version
+    assert app.version == "0.5.0"
 
 
 def test_favicon_is_served_at_conventional_browser_url():
