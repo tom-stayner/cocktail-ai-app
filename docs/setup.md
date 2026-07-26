@@ -31,10 +31,18 @@ For a runtime-only installation, use `python -m pip install -r requirements.txt`
 | `AWS_REGION` | `ap-southeast-2` | AWS region |
 | `TABLE_NAME` | `Cocktails` | DynamoDB table |
 | `LOG_LEVEL` | `INFO` | Application logging threshold |
+| `ALLOW_MUTATIONS` | `false` | Enable cocktail create, update and delete routes |
 
 Supported `APP_ENV` values are `development`, `test`, and `production`.
 
 Supported `LOG_LEVEL` values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
+
+`ALLOW_MUTATIONS` is fail-closed: it defaults to `false`, and only the explicit value
+`true` enables POST, PUT and DELETE operations. Invalid values prevent application
+startup. Set it to `true` only for trusted local development or test environments
+that need to modify cocktail data. This switch is a safety control, not
+authentication or authorisation, and deployed environments should leave it set to
+`false`.
 
 Using a `.env` file is convenient for local development. Deployed environments should supply these values through their runtime configuration.
 
@@ -63,5 +71,8 @@ When the application is hosted on AWS Lambda in a future deployment, Lambda will
 Application settings are supplied through environment variables and are not stored in the repository. Do not commit `.env`, AWS credentials, API keys, or passwords.
 
 The application uses the standard AWS credential provider chain to access DynamoDB and does not currently configure a local DynamoDB endpoint.
+
+Server-rendered cocktail pages escape stored content before inserting it into HTML.
+JSON endpoints continue to return the original stored values.
 
 See [deployment notes](architecture/deployment.md) for the current operating model and [coding standards](development/coding-standards.md) for delivery expectations.

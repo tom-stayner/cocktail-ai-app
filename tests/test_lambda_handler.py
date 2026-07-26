@@ -1,14 +1,19 @@
 import base64
+from dataclasses import replace
 import json
 from typing import Any
 
+from src.config import settings
 from src.lambda_handler import handler
 
 
-def api_gateway_event(path: str, method: str = "GET") -> dict[str, Any]:
+def api_gateway_event(
+    path: str,
+    method: str = "GET",
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     route_key = f"{method} {path}"
-
-    return {
+    event = {
         "version": "2.0",
         "routeKey": route_key,
         "rawPath": path,
@@ -30,6 +35,12 @@ def api_gateway_event(path: str, method: str = "GET") -> dict[str, Any]:
         },
         "isBase64Encoded": False,
     }
+
+    if payload is not None:
+        event["headers"]["content-type"] = "application/json"
+        event["body"] = json.dumps(payload)
+
+    return event
 
 
 def response_body(response: dict[str, Any]) -> bytes:
@@ -66,3 +77,32 @@ def test_favicon_through_lambda_handler():
     assert response["statusCode"] == 200
     assert "image/svg+xml" in response["headers"]["content-type"]
     assert body
+
+
+def test_disabled_mutation_is_blocked_through_lambda_handler(monkeypatch):
+    monkeypatch.setattr(
+        "src.main.settings",
+        replace(settings, allow_mutations=False),
+    )
+
+    def fail_if_called(cocktail):
+        raise AssertionError("Disabled mutation must not reach the service")
+
+    monkeypatch.setattr(
+        "src.main.cocktail_service.create_cocktail",
+        fail_if_called,
+    )
+    payload = {
+        "id": 7,
+        "name": "Martini",
+        "spirit": "Gin",
+        "ingredients": ["Gin", "Vermouth"],
+    }
+
+    response = handler(api_gateway_event("/cocktails", "POST", payload), {})
+
+    assert response["statusCode"] == 403
+    assert response["isBase64Encoded"] is False
+    assert json.loads(response_body(response)) == {
+        "detail": "Cocktail mutations are disabled"
+    }

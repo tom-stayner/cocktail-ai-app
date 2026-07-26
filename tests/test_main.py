@@ -1,3 +1,4 @@
+from dataclasses import replace
 import logging
 
 import pytest
@@ -15,6 +16,13 @@ VALID_COCKTAIL = {
     "spirit": "Gin",
     "ingredients": ["Gin", "Vermouth"],
 }
+
+
+def set_mutations_enabled(monkeypatch, enabled: bool) -> None:
+    monkeypatch.setattr(
+        "src.main.settings",
+        replace(settings, allow_mutations=enabled),
+    )
 
 
 def test_legacy_health_endpoint_remains_compatible():
@@ -184,8 +192,74 @@ def test_cocktails_endpoint_uses_service(monkeypatch):
     assert response.json() == [{"id": 1, "name": "Margarita", "spirit": "Tequila"}]
 
 
+@pytest.mark.parametrize(
+    ("method", "path", "service_method", "payload"),
+    [
+        ("POST", "/cocktails", "create_cocktail", VALID_COCKTAIL),
+        ("PUT", "/cocktails/7", "update_cocktail", VALID_COCKTAIL),
+        ("DELETE", "/cocktails/7", "delete_cocktail", None),
+    ],
+)
+def test_mutations_are_blocked_before_service_calls(
+    monkeypatch,
+    method,
+    path,
+    service_method,
+    payload,
+):
+    set_mutations_enabled(monkeypatch, False)
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("Disabled mutation must not reach the service")
+
+    monkeypatch.setattr(
+        f"src.main.cocktail_service.{service_method}",
+        fail_if_called,
+    )
+
+    response = client.request(method, path, json=payload)
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Cocktail mutations are disabled"}
+
+
+def test_enabled_create_preserves_successful_service_behaviour(monkeypatch):
+    set_mutations_enabled(monkeypatch, True)
+    received = []
+
+    def create(cocktail):
+        received.append(cocktail)
+        return {"message": "Cocktail added successfully"}
+
+    monkeypatch.setattr("src.main.cocktail_service.create_cocktail", create)
+
+    response = client.post("/cocktails", json=VALID_COCKTAIL)
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "Cocktail added successfully"}
+    assert received[0].model_dump() == VALID_COCKTAIL
+
+
+def test_enabled_delete_preserves_successful_service_behaviour(monkeypatch):
+    set_mutations_enabled(monkeypatch, True)
+    received = []
+
+    def delete(cocktail_id):
+        received.append(cocktail_id)
+        return {"message": f"Cocktail {cocktail_id} deleted"}
+
+    monkeypatch.setattr("src.main.cocktail_service.delete_cocktail", delete)
+
+    response = client.delete("/cocktails/7")
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "Cocktail 7 deleted"}
+    assert received == [7]
+
+
 @pytest.mark.parametrize("missing_field", VALID_COCKTAIL)
-def test_create_rejects_missing_required_fields(missing_field):
+def test_create_rejects_missing_required_fields(monkeypatch, missing_field):
+    set_mutations_enabled(monkeypatch, True)
     payload = {
         key: value for key, value in VALID_COCKTAIL.items() if key != missing_field
     }
@@ -206,7 +280,8 @@ def test_create_rejects_missing_required_fields(missing_field):
         ("spirit", ["Gin"]),
     ],
 )
-def test_create_rejects_invalid_field_types(field, invalid_value):
+def test_create_rejects_invalid_field_types(monkeypatch, field, invalid_value):
+    set_mutations_enabled(monkeypatch, True)
     payload = {**VALID_COCKTAIL, field: invalid_value}
 
     response = client.post("/cocktails", json=payload)
@@ -218,6 +293,8 @@ def test_invalid_create_does_not_call_service_or_log_success(
     monkeypatch,
     caplog,
 ):
+    set_mutations_enabled(monkeypatch, True)
+
     def fail_if_called(cocktail):
         raise AssertionError("Invalid payload must not reach the service")
 
@@ -241,6 +318,8 @@ def test_invalid_create_does_not_call_service_or_log_success(
 
 
 def test_invalid_update_does_not_call_service(monkeypatch):
+    set_mutations_enabled(monkeypatch, True)
+
     def fail_if_called(cocktail_id, cocktail):
         raise AssertionError("Invalid payload must not reach the service")
 
@@ -266,7 +345,8 @@ def test_invalid_update_does_not_call_service(monkeypatch):
         ("GET", "/cocktails/html/not-a-number"),
     ],
 )
-def test_routes_reject_non_integer_cocktail_ids(method, path):
+def test_routes_reject_non_integer_cocktail_ids(monkeypatch, method, path):
+    set_mutations_enabled(monkeypatch, True)
     response = client.request(
         method,
         path,
@@ -292,6 +372,8 @@ def test_get_missing_cocktail_returns_404(monkeypatch):
 
 
 def test_delete_missing_cocktail_returns_404(monkeypatch):
+    set_mutations_enabled(monkeypatch, True)
+
     def raise_not_found(cocktail_id):
         raise HTTPException(status_code=404, detail="Cocktail not found")
 
@@ -307,6 +389,8 @@ def test_delete_missing_cocktail_returns_404(monkeypatch):
 
 
 def test_update_missing_cocktail_returns_404(monkeypatch):
+    set_mutations_enabled(monkeypatch, True)
+
     def raise_not_found(cocktail_id, cocktail):
         raise HTTPException(status_code=404, detail="Cocktail not found")
 
@@ -360,6 +444,36 @@ def test_html_collection_routes_use_service(monkeypatch):
     assert "Tequila" in library_response.text
 
 
+def test_html_collection_routes_escape_dynamic_content(monkeypatch):
+    cocktails = [
+        {
+            "id": '7/"><script>alert("xss")</script>',
+            "name": '<script>alert("xss")</script> & "\'',
+            "spirit": "< > & \"'",
+            "ingredients": [],
+        }
+    ]
+    monkeypatch.setattr(
+        "src.main.cocktail_service.get_all_cocktails",
+        lambda: cocktails,
+    )
+
+    home_response = client.get("/")
+    library_response = client.get("/cocktails/html")
+
+    for response in (home_response, library_response):
+        assert response.status_code == 200
+        assert "<script>" not in response.text
+        assert "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;" in response.text
+        assert "%2F%22%3E%3Cscript%3Ealert%28%22xss%22%29%3C%2Fscript%3E" in (
+            response.text
+        )
+
+    assert "<ul>" in home_response.text
+    assert "<table>" in library_response.text
+    assert "&lt; &gt; &amp; &quot;&#x27;" in library_response.text
+
+
 def test_cocktail_html_uses_service(monkeypatch):
     monkeypatch.setattr(
         "src.main.cocktail_service.get_cocktail",
@@ -376,6 +490,31 @@ def test_cocktail_html_uses_service(monkeypatch):
     assert response.status_code == 200
     assert "Margarita" in response.text
     assert "Lime juice" in response.text
+
+
+def test_cocktail_html_escapes_dynamic_content_without_changing_json(monkeypatch):
+    cocktail = {
+        "id": 7,
+        "name": '<script>alert("xss")</script> & "\'',
+        "spirit": "< > & \"'",
+        "ingredients": ['<script>alert("xss")</script>', "< > & \"'"],
+    }
+    monkeypatch.setattr(
+        "src.main.cocktail_service.get_cocktail",
+        lambda cocktail_id: cocktail,
+    )
+
+    html_response = client.get("/cocktails/html/7")
+    json_response = client.get("/cocktails/7")
+
+    assert html_response.status_code == 200
+    assert "<script>" not in html_response.text
+    assert "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;" in html_response.text
+    assert "&lt; &gt; &amp; &quot;&#x27;" in html_response.text
+    assert "<h1>" in html_response.text
+    assert "<ul>" in html_response.text
+    assert json_response.status_code == 200
+    assert json_response.json() == cocktail
 
 
 def test_cocktail_html_does_not_duplicate_not_found_log(monkeypatch, caplog):

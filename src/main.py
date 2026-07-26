@@ -2,7 +2,12 @@
 # Imports
 # =====================================================
 
+from html import escape
+from urllib.parse import quote
+
+from fastapi import Depends
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi import status
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
@@ -45,12 +50,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Helper Functions
 # =====================================================
 
+MUTATIONS_DISABLED_DETAIL = "Cocktail mutations are disabled"
+
 
 def render_page(title: str, content: str) -> HTMLResponse:
+    safe_title = escape(title)
+
     return HTMLResponse(f"""
     <html>
     <head>
-        <title>{title}</title>
+        <title>{safe_title}</title>
         <link rel="icon" href="/favicon.ico" type="image/svg+xml">
         <link rel="stylesheet" href="/static/main.css">
     </head>
@@ -71,6 +80,19 @@ def render_page(title: str, content: str) -> HTMLResponse:
     </body>
     </html>
     """)
+
+
+def cocktail_html_url(cocktail_id: object) -> str:
+    path = f"/cocktails/html/{quote(str(cocktail_id), safe='')}"
+    return escape(path, quote=True)
+
+
+def require_mutations_enabled() -> None:
+    if not settings.allow_mutations:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=MUTATIONS_DISABLED_DETAIL,
+        )
 
 
 # =====================================================
@@ -135,16 +157,19 @@ def root() -> HTMLResponse:
     cocktail_list = ""
 
     for cocktail in cocktails:
+        cocktail_url = cocktail_html_url(cocktail["id"])
+        cocktail_name = escape(str(cocktail["name"]))
         cocktail_list += f"""
         <li>
-            <a href="/cocktails/html/{cocktail['id']}">
-                {cocktail['name']}
+            <a href="{cocktail_url}">
+                {cocktail_name}
             </a>
         </li>
         """
 
+    safe_app_title = escape(app.title)
     content = f"""
-    <h1>🍸 {app.title}</h1>
+    <h1>🍸 {safe_app_title}</h1>
 
     <p>
         A simple REST API built with Python and FastAPI.
@@ -189,15 +214,19 @@ def cocktails_html() -> HTMLResponse:
     rows = ""
 
     for cocktail in cocktails:
+        cocktail_id = escape(str(cocktail["id"]))
+        cocktail_url = cocktail_html_url(cocktail["id"])
+        cocktail_name = escape(str(cocktail["name"]))
+        cocktail_spirit = escape(str(cocktail["spirit"]))
         rows += f"""
         <tr>
-            <td>{cocktail["id"]}</td>
+            <td>{cocktail_id}</td>
             <td>
-                <a href="/cocktails/html/{cocktail["id"]}">
-                    {cocktail["name"]}
+                <a href="{cocktail_url}">
+                    {cocktail_name}
                 </a>
             </td>
-            <td>{cocktail["spirit"]}</td>
+            <td>{cocktail_spirit}</td>
         </tr>
         """
 
@@ -235,13 +264,16 @@ def cocktail_html(cocktail_id: int) -> HTMLResponse:
     ingredients = ""
 
     for ingredient in item["ingredients"]:
-        ingredients += f"<li>{ingredient}</li>"
+        ingredients += f"<li>{escape(str(ingredient))}</li>"
+
+    cocktail_name = escape(str(item["name"]))
+    cocktail_spirit = escape(str(item["spirit"]))
 
     content = f"""
-    <h1>🍸 {item["name"]}</h1>
+    <h1>🍸 {cocktail_name}</h1>
 
     <p>
-        <strong>Spirit:</strong> {item["spirit"]}
+        <strong>Spirit:</strong> {cocktail_spirit}
     </p>
 
     <h2>Ingredients</h2>
@@ -257,7 +289,7 @@ def cocktail_html(cocktail_id: int) -> HTMLResponse:
     </a>
     """
 
-    return render_page(item["name"], content)
+    return render_page(str(item["name"]), content)
 
 
 # =====================================================
@@ -275,16 +307,22 @@ def get_cocktail(cocktail_id: int) -> dict:
     return cocktail_service.get_cocktail(cocktail_id)
 
 
-@app.post("/cocktails")
+@app.post("/cocktails", dependencies=[Depends(require_mutations_enabled)])
 def create_cocktail(cocktail: Cocktail) -> dict:
     return cocktail_service.create_cocktail(cocktail)
 
 
-@app.delete("/cocktails/{cocktail_id}")
+@app.delete(
+    "/cocktails/{cocktail_id}",
+    dependencies=[Depends(require_mutations_enabled)],
+)
 def delete_cocktail(cocktail_id: int) -> dict:
     return cocktail_service.delete_cocktail(cocktail_id)
 
 
-@app.put("/cocktails/{cocktail_id}")
+@app.put(
+    "/cocktails/{cocktail_id}",
+    dependencies=[Depends(require_mutations_enabled)],
+)
 def update_cocktail(cocktail_id: int, cocktail: Cocktail) -> dict:
     return cocktail_service.update_cocktail(cocktail_id, cocktail)
