@@ -34,6 +34,12 @@ Supported `LOG_LEVEL` values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITI
 
 Using a `.env` file is convenient for local development. Deployed environments should supply these values through their runtime configuration.
 
+## Logging
+
+Application logs are written to the console and remain visible in the local Uvicorn terminal. The application does not create a log directory or manage log files.
+
+When the application is hosted on AWS Lambda in a future deployment, Lambda will capture standard output and standard error for collection by CloudWatch. CloudWatch log groups and retention will be managed later through deployment infrastructure; this application change creates no AWS resources.
+
 ## Local Endpoints
 
 - `/` — HTML landing page

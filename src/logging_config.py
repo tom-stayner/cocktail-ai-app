@@ -1,27 +1,29 @@
 import logging
-from pathlib import Path
 
 from src.config import settings
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
+LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 
-LOG_FILE = LOG_DIR / "cocktail-api.log"
 
-# Configure logging for both the console and the application log file.
-logging.basicConfig(
-    level=getattr(logging, settings.log_level),
-    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler(),
-    ],
-)
+def configure_logging() -> logging.Logger:
+    """Configure console logging and return the named application logger."""
 
-# Suppress noisy third-party libraries
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+    log_level = getattr(logging, settings.log_level)
 
-# Application logger
-logger = logging.getLogger("cocktail_api")
+    logging.basicConfig(
+        level=log_level,
+        format=LOG_FORMAT,
+        handlers=[logging.StreamHandler()],
+    )
+
+    logging.getLogger("botocore").setLevel(logging.WARNING)
+    logging.getLogger("boto3").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    application_logger = logging.getLogger("cocktail_api")
+    application_logger.setLevel(log_level)
+
+    return application_logger
+
+
+logger = configure_logging()

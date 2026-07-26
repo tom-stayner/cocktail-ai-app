@@ -10,7 +10,7 @@ The application currently runs locally for development; it is not deployed to AW
 
 ## Operational Notes
 
-- Logging is written to the local logs directory.
+- Application logging is written to the console. A future Lambda deployment can forward standard output and standard error to CloudWatch without application-managed log files.
 - `/health` preserves the backward-compatible basic response, `/health/live` reports process liveness, and `/health/ready` checks DynamoDB availability.
 - The health endpoints are suitable for future container or load-balancer probes, but are not currently wired into deployment infrastructure.
 - The application is not yet packaged for cloud deployment.

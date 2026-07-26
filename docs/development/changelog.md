@@ -7,6 +7,14 @@ The format is based on the principles of
 and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - Unreleased
+
+### Changed
+
+- Replaced local file-based application logging with console logging compatible with AWS Lambda and CloudWatch.
+
+---
+
 ## [0.4.0] - 2026-07-23
 
 ### Added
