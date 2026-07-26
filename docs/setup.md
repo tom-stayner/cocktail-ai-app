@@ -21,6 +21,27 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
 
 For a runtime-only installation, use `python -m pip install -r requirements.txt`.
 
+## Lambda Package Build
+
+Build the generated Lambda deployment archive from the project root:
+
+```text
+python scripts/lambda_package.py build --output dist/cocktail-ai-lambda.zip
+python scripts/lambda_package.py audit --archive dist/cocktail-ai-lambda.zip
+```
+
+The builder installs runtime dependencies from `requirements.txt` only and targets
+AWS Lambda's CPython 3.14 runtime on Linux x86-64. It requests compatible
+manylinux2014 wheels and fails rather than falling back to host-specific packages.
+The generated and ignored archive is written to
+`dist/cocktail-ai-lambda.zip`; temporary staging content is removed automatically.
+
+A package built on Windows intentionally contains Linux dependencies, so importing
+it with the host Windows interpreter is not a meaningful compatibility test.
+GitHub Actions builds and audits the package on Linux, extracts it into a clean
+location, and invokes the packaged handler from a separate empty virtual
+environment.
+
 ## Application Settings
 
 | Variable | Default | Purpose |
