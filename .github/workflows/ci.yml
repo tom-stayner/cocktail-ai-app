@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ALLOW_MUTATIONS: "false"
+  AWS_EC2_METADATA_DISABLED: "true"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install development dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Run Ruff
+        run: python -m ruff check .
+
+      - name: Run Black
+        run: python -m black --check .
+
+  lambda-package:
+    needs: quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Build Lambda package
+        run: python scripts/lambda_package.py build --output dist/cocktail-ai-lambda.zip
+
+      - name: Audit Lambda package
+        run: python scripts/lambda_package.py audit --archive dist/cocktail-ai-lambda.zip
+
+      - name: Extract package and create clean smoke environment
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/lambda-extracted" "$RUNNER_TEMP/lambda-smoke-venv"
+          mkdir -p "$RUNNER_TEMP/lambda-extracted"
+          python -m zipfile -e dist/cocktail-ai-lambda.zip "$RUNNER_TEMP/lambda-extracted"
+          python -m venv --without-pip "$RUNNER_TEMP/lambda-smoke-venv"
+
+      - name: Smoke test packaged handler
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/lambda-extracted"
+          env -u PYTHONPATH \
+            PYTHONNOUSERSITE=1 \
+            "$RUNNER_TEMP/lambda-smoke-venv/bin/python" - <<'PY'
+          import base64
+          import json
+          from pathlib import Path
+
+          import fastapi
+          import mangum
+          import src
+          from src.lambda_handler import handler
+
+          package_root = Path.cwd().resolve()
+          smoke_environment = Path("${{ runner.temp }}/lambda-smoke-venv").resolve()
+
+          assert Path(src.__file__).resolve().is_relative_to(package_root)
+          assert Path(fastapi.__file__).resolve().is_relative_to(package_root)
+          assert Path(mangum.__file__).resolve().is_relative_to(package_root)
+          assert Path(__import__("sys").prefix).resolve() == smoke_environment
+
+          def event(path):
+              route_key = f"GET {path}"
+              return {
+                  "version": "2.0",
+                  "routeKey": route_key,
+                  "rawPath": path,
+                  "rawQueryString": "",
+                  "headers": {
+                      "host": "example.execute-api.ap-southeast-2.amazonaws.com",
+                      "user-agent": "ci-package-smoke",
+                  },
+                  "requestContext": {
+                      "http": {
+                          "method": "GET",
+                          "path": path,
+                          "protocol": "HTTP/1.1",
+                          "sourceIp": "127.0.0.1",
+                          "userAgent": "ci-package-smoke",
+                      },
+                      "routeKey": route_key,
+                      "stage": "$default",
+                  },
+                  "isBase64Encoded": False,
+              }
+
+          def body(response):
+              value = response["body"]
+              if response.get("isBase64Encoded", False):
+                  return base64.b64decode(value)
+              return value.encode()
+
+          health = handler(event("/health"), {})
+          assert health["statusCode"] == 200
+          assert json.loads(body(health)) == {"status": "ok"}
+
+          stylesheet = handler(event("/static/main.css"), {})
+          assert stylesheet["statusCode"] == 200
+          assert b".card" in body(stylesheet)
+
+          favicon = handler(event("/favicon.ico"), {})
+          assert favicon["statusCode"] == 200
+          assert b"Cocktail glass" in body(favicon)
+
+          print("Packaged handler smoke tests passed")
+          PY

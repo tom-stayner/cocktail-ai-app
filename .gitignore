@@ -21,3 +21,7 @@ Thumbs.db
 # Logs
 logs/*
 !logs/.gitkeep
+
+# Generated Lambda package output
+/dist/
+/.lambda-build/

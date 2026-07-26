@@ -14,6 +14,10 @@ and this project follows
 - Added Mangum as the runtime ASGI-to-Lambda adapter with the dedicated `src.lambda_handler.handler` entry point.
 - Added API Gateway HTTP API payload-v2 adapter coverage for health, static stylesheet and favicon responses.
 - Added Uvicorn and Lambda-path coverage for fail-closed cocktail mutation safeguards.
+- Added GitHub Actions quality checks for the complete test suite, Ruff and Black.
+- Added stable Lambda ZIP construction using runtime-only Linux x86-64 dependencies.
+- Added structural and security auditing for Lambda package contents and paths.
+- Added clean packaged-handler smoke tests covering health, stylesheet and favicon responses.
 
 ### Changed
 
