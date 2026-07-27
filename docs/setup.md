@@ -38,13 +38,17 @@ interactions and packaging downloads dependencies without invoking AWS APIs.
 
 ## Terraform Validation
 
-Terraform Step 1 is a repository foundation only. It defines no application
-hosting resources and must be validated without AWS credentials, plans or applies:
+Terraform defines the state foundation and the future private Lambda runtime.
+These resources are not deployed and must be validated without AWS credentials,
+plans or applies. Build the real ignored Lambda package before validating the
+development root because Terraform hashes its contents:
 
 ```text
 terraform fmt -check -recursive infra/terraform
 terraform -chdir=infra/terraform/bootstrap init -backend=false
 terraform -chdir=infra/terraform/bootstrap validate
+python scripts/lambda_package.py build --output dist/cocktail-ai-lambda.zip
+python scripts/lambda_package.py audit --archive dist/cocktail-ai-lambda.zip
 terraform -chdir=infra/terraform/environments/dev init -backend=false
 terraform -chdir=infra/terraform/environments/dev validate
 ```
@@ -59,8 +63,19 @@ partial S3 backend with native lockfiles. Supply its future bucket, key and regi
 through an ignored `*.tfbackend` file; do not commit backend configuration, state,
 plans, credentials or environment-specific `.tfvars`.
 
-Do not run `terraform plan` or `terraform apply` as part of Step 1. The existing
-`Cocktails` DynamoDB table remains outside Terraform ownership.
+Do not run `terraform plan` or `terraform apply` during static validation. The
+existing `Cocktails` DynamoDB table remains outside Terraform ownership.
+
+The development definition uses Python 3.14 on Amazon Linux 2023, x86-64, 256 MB
+memory and a 15-second timeout. It publishes immutable versions and points a
+`live` alias to the current managed version. The explicit Lambda log group retains
+logs for 14 days. Error and throttle alarms are defined without notification
+actions.
+
+Lambda automatically supplies the reserved `AWS_REGION` environment variable.
+Terraform must not configure it explicitly; the application reads the runtime
+value normally. API Gateway, invocation permission and a public endpoint remain
+deferred.
 
 ## Lambda Package Build
 

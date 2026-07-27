@@ -1,5 +1,41 @@
 # Engineering Log
 
+## 2026-07-27 — v0.6.0 Private Lambda Runtime Definition
+
+### Context
+
+The Terraform foundation needed a private, reviewable runtime boundary before any
+public API integration or AWS-backed execution.
+
+### Decisions
+
+- Referenced the existing cocktail table as external data and scoped IAM to its
+  resolved ARN.
+- Separated Lambda trust, DynamoDB access and log-writing policy documents.
+- Made write permissions conditional on the fail-closed mutation setting.
+- Defined a Python 3.14 x86-64 function from the real audited ZIP with immutable
+  versions and a `live` alias.
+- Defined a 14-day log group plus error and throttle alarms with no notification
+  actions.
+- Relied on Lambda's reserved runtime-provided `AWS_REGION` rather than attempting
+  to configure an invalid environment key.
+
+### Trade-offs
+
+- Strict package hashing means static validation must build the real ZIP first.
+- Data-source and IAM policy evaluation cannot be authoritatively rendered without
+  a future approved AWS-backed plan.
+- Alarms are visible but cannot notify operators until a channel is approved.
+- Emergency alias rollback requires subsequent Terraform drift reconciliation.
+
+### Outcome
+
+The private runtime, permissions and observability contracts are statically
+validated but not deployed. API Gateway, invocation permission, public access and
+deployment automation remain later work.
+
+---
+
 ## 2026-07-27 — v0.6.0 Terraform Foundation
 
 ### Context
