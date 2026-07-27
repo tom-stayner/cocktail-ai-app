@@ -52,13 +52,48 @@ The existing `Cocktails` DynamoDB table remains operational application data
 outside Terraform ownership. Step 1 does not define, import, modify or transfer
 ownership of that table.
 
+## Defined Lambda Runtime — Not Deployed
+
+The v0.6.0 development Terraform root now defines a private Lambda runtime layer,
+but none of these resources has been planned against AWS or deployed:
+
+- the existing `Cocktails` table is resolved through a data source and remains
+  outside Terraform ownership;
+- a dedicated Lambda execution role trusts only `lambda.amazonaws.com`;
+- table permissions are limited to `DescribeTable`, `Scan` and `GetItem`, with
+  `PutItem` and `DeleteItem` included only when `ALLOW_MUTATIONS` is enabled;
+- CloudWatch Logs permissions allow only `CreateLogStream` and `PutLogEvents` for
+  the explicitly managed Lambda log group;
+- a Python 3.14, x86-64 ZIP function uses the audited package and publishes
+  immutable versions;
+- a `live` alias points to the version published by Terraform; and
+- error and throttling alarms observe the managed function.
+
+The Lambda runtime uses Amazon Linux 2023. Terraform configures `APP_NAME`,
+`APP_VERSION`, `APP_ENV`, `TABLE_NAME`, `LOG_LEVEL` and `ALLOW_MUTATIONS`.
+Lambda supplies the reserved `AWS_REGION` variable automatically, and the existing
+application reads it without application changes.
+
+The log group is named for the Lambda function and retains logs for 14 days. Each
+alarm triggers when the five-minute sum is at least one and treats missing data as
+non-breaching. No notification actions are attached, so the alarms will be visible
+in CloudWatch but will not notify anyone.
+
+The `live` alias establishes a rollback boundary: an emergency rollback may repoint
+the alias to an earlier immutable version, but Terraform configuration and state
+must then be reconciled through an approved workflow.
+
+API Gateway, Lambda invocation permission and public URLs remain deferred. No
+public endpoint exists, and `ALLOW_MUTATIONS=false` remains a fail-closed safety
+control rather than authentication.
+
 ## Future Direction
 
 A future deployment is expected to address:
 - AWS Lambda hosting for the validated application package
 - Amazon API Gateway integration
-- least-privilege IAM execution roles
-- CloudWatch logging, retention and operational configuration
+- an approved AWS-backed review and deployment of the defined Lambda, IAM and
+  CloudWatch resources
 - Terraform-managed infrastructure and an approved remote-state workflow
 - Amazon DynamoDB as the primary data store
 - Amazon Cognito for authentication

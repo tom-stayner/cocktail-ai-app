@@ -20,17 +20,25 @@ and this project follows
   DynamoDB lock table.
 - Added validation-only Terraform CI covering formatting, backend-disabled
   initialization and both root configurations.
+- Added a statically validated private Lambda definition using the audited Python
+  3.14 ZIP package, immutable versions and a `live` alias.
+- Added a dedicated least-privilege execution role with exact existing-table
+  access and conditional write permissions.
+- Added an explicit 14-day Lambda log group and baseline error and throttle
+  alarms without notification actions.
 
 ### Changed
 
 - Approved Terraform as the v0.6.0 infrastructure-as-code approach and documented
   its trade-offs against SAM, CDK and raw CloudFormation.
 - Documented the existing cocktail DynamoDB table as outside Terraform ownership.
+- Terraform validation now builds and audits the real Lambda package before
+  validating its source-code hash.
 
 ### Deployment
 
-- Step 1 creates repository foundations only. It does not create Lambda, API
-  Gateway, IAM, CloudWatch, DynamoDB or public hosting infrastructure.
+- The Lambda, IAM and CloudWatch runtime layer is defined but not deployed.
+  API Gateway, invocation permission and a public endpoint remain deferred.
 
 ---
 

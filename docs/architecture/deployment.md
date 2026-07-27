@@ -58,13 +58,43 @@ contains two independently initialized roots:
   native S3 lockfiles; bucket, key and region values are supplied through ignored
   local backend configuration.
 
-The application root does not yet define Lambda, API Gateway, IAM, CloudWatch or
-other hosting resources. The existing `Cocktails` table is an external dependency
-and remains outside Terraform ownership.
+The application root defines the private Lambda runtime, its least-privilege
+execution role, explicit log group, immutable-version alias and baseline alarms.
+These definitions have only been statically validated. They have not been planned
+against AWS, applied or deployed. The existing `Cocktails` table is resolved as an
+external data source and remains outside Terraform ownership.
 
 GitHub Actions pins Terraform, checks formatting, initializes both roots with
 `-backend=false` and validates them. CI supplies no AWS credentials and runs
 neither `terraform plan` nor `terraform apply`.
+
+## Defined Runtime Boundary
+
+The defined function uses the audited ZIP as `src.lambda_handler.handler` on the
+Python 3.14 Amazon Linux 2023 runtime with x86-64 architecture. It defaults to
+256 MB memory, a 15-second timeout, immutable version publication and a `live`
+alias. Terraform hashes the actual ZIP, so package changes change the function's
+source-code hash.
+
+The execution role trusts only Lambda. Its DynamoDB policy targets the resolved
+existing table ARN and grants `DescribeTable`, `Scan` and `GetItem`; `PutItem` and
+`DeleteItem` are conditional on `ALLOW_MUTATIONS=true`. Its separate log policy
+grants only `CreateLogStream` and `PutLogEvents` for the managed function log
+group. It does not grant log-group creation because Terraform defines the group
+before the function.
+
+Terraform configures all application settings except `AWS_REGION`, which is
+reserved and supplied automatically by Lambda. `ALLOW_MUTATIONS` remains `false`
+by default and is not an authentication or authorisation mechanism.
+
+The managed log group retains records for 14 days. Error and throttle alarms use a
+five-minute `Sum`, alarm at one or more events and treat missing data as
+non-breaching. They have no notification actions.
+
+The `live` alias points to the published function version rather than `$LATEST`.
+Emergency rollback can repoint it to an earlier immutable version, followed by
+approved Terraform configuration and state reconciliation. No rollback script is
+provided.
 
 `ALLOW_MUTATIONS=true` is intended only for trusted local development or test
 environments. The setting is a safety control rather than an authentication or
@@ -79,9 +109,9 @@ environment while preserving the existing FastAPI structure and service layer. I
 will require an approved API Gateway/Lambda topology, least-privilege IAM,
 CloudWatch operational configuration and later Terraform implementation steps.
 
-No public endpoint or AWS hosting infrastructure exists after the Terraform
-foundation step. Planning, applying, deployment automation and GitHub OIDC remain
-subject to separate approval.
+No public endpoint or deployed AWS hosting infrastructure exists after this step.
+API Gateway, Lambda invocation permission, planning, applying, deployment
+automation and GitHub OIDC remain subject to separate approval.
 
 The existing package builder installs from `requirements.txt` so the ZIP contains
 runtime dependencies only. Contributor and quality environments install
