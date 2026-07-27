@@ -6,6 +6,7 @@ This document is the authoritative guide for running Cocktail AI App locally. Fo
 
 - Python 3.14+
 - A virtual environment
+- Terraform 1.15.8 only for contributors performing infrastructure formatting and validation; ordinary local application use does not require Terraform
 - AWS credentials available through the standard AWS credential provider chain when running DynamoDB-backed application routes
 - Access to the configured DynamoDB table when exercising persistence or readiness locally
 
@@ -34,6 +35,32 @@ python -m black --check .
 GitHub Actions repeats these checks on pull requests and `main`. Tests and Lambda
 package build/audit operations do not require AWS credentials; tests isolate AWS
 interactions and packaging downloads dependencies without invoking AWS APIs.
+
+## Terraform Validation
+
+Terraform Step 1 is a repository foundation only. It defines no application
+hosting resources and must be validated without AWS credentials, plans or applies:
+
+```text
+terraform fmt -check -recursive infra/terraform
+terraform -chdir=infra/terraform/bootstrap init -backend=false
+terraform -chdir=infra/terraform/bootstrap validate
+terraform -chdir=infra/terraform/environments/dev init -backend=false
+terraform -chdir=infra/terraform/environments/dev validate
+```
+
+Initialization downloads the declared provider from the Terraform Registry and
+generates a tracked `.terraform.lock.hcl` in each root. The generated
+`.terraform/` working directories remain ignored.
+
+The bootstrap root is intentionally configured with local state until a separately
+approved AWS execution and state-migration step. The development root uses a
+partial S3 backend with native lockfiles. Supply its future bucket, key and region
+through an ignored `*.tfbackend` file; do not commit backend configuration, state,
+plans, credentials or environment-specific `.tfvars`.
+
+Do not run `terraform plan` or `terraform apply` as part of Step 1. The existing
+`Cocktails` DynamoDB table remains outside Terraform ownership.
 
 ## Lambda Package Build
 

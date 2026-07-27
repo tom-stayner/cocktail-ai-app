@@ -1,5 +1,42 @@
 # Engineering Log
 
+## 2026-07-27 — v0.6.0 Terraform Foundation
+
+### Context
+
+AWS deployment work requires an auditable infrastructure definition and protected
+state design before hosting resources can be introduced.
+
+### Decisions
+
+- Selected Terraform for declarative, reviewable AWS infrastructure with mature
+  provider coverage.
+- Separated the state-bucket bootstrap root from the development application root.
+- Designed encrypted, versioned and non-public S3 state with TLS enforcement and
+  native S3 lockfiles rather than a DynamoDB lock table.
+- Kept the existing `Cocktails` table outside Terraform ownership.
+- Added static CI initialization and validation without credentials, plans or
+  applies.
+
+### Trade-offs
+
+- Terraform state requires explicit protection and lifecycle management.
+- The bootstrap root starts with local state until an approved execution and
+  migration step.
+- Terraform is more general than SAM, less code-centric than CDK and less
+  AWS-specific and verbose than raw CloudFormation, but it adds provider and state
+  version management.
+- Step 1 intentionally defines no Lambda, API Gateway, IAM or CloudWatch hosting
+  resources.
+
+### Outcome
+
+The repository has a reviewable Terraform and state-management foundation while
+the deployed system remains the v0.5.0 local-first implementation. No AWS
+infrastructure or public endpoint has been created.
+
+---
+
 ## 2026-07-27 — v0.5.0 Serverless Application Readiness
 
 ### Context

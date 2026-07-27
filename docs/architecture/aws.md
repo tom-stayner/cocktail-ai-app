@@ -18,6 +18,40 @@ CloudWatch configuration or other hosting resources. Local developer credentials
 and any future deployment role must supply DynamoDB permissions through the normal
 AWS operating model.
 
+## Terraform Foundation
+
+Terraform is the approved infrastructure-as-code approach for v0.6.0. Step 1 adds
+repository structure and static validation only; it does not create AWS resources
+or expose a public endpoint.
+
+Terraform was selected because it provides declarative planning, mature AWS
+provider coverage, reviewable state-aware changes and a direct path from local
+validation to a future deployment workflow. AWS SAM is well suited to
+serverless-only applications but is less suitable for the broader supporting
+infrastructure expected here. AWS CDK would add a programming-language synthesis
+layer and generated CloudFormation, while raw CloudFormation would require more
+verbose AWS-specific templates. Terraform introduces state-management overhead,
+so the repository defines that boundary explicitly from the outset.
+
+The Terraform layout has two independent roots:
+
+- `infra/terraform/bootstrap` owns only the future S3 state bucket and its
+  protections. It starts with local state; migration of bootstrap state is
+  deferred until a separately approved AWS execution step.
+- `infra/terraform/environments/dev` holds the future development application
+  configuration. Its partial S3 backend enables native S3 lockfiles and receives
+  environment-specific backend values outside version control.
+
+The planned state bucket enables versioning, SSE-S3 encryption, bucket-owner
+enforced ownership, complete public-access blocking and a policy that denies
+non-TLS requests. Terraform deletion protection is also configured. Application
+state will use S3 native lockfiles through `use_lockfile = true`; no DynamoDB state
+lock table is proposed.
+
+The existing `Cocktails` DynamoDB table remains operational application data
+outside Terraform ownership. Step 1 does not define, import, modify or transfer
+ownership of that table.
+
 ## Future Direction
 
 A future deployment is expected to address:
@@ -25,7 +59,7 @@ A future deployment is expected to address:
 - Amazon API Gateway integration
 - least-privilege IAM execution roles
 - CloudWatch logging, retention and operational configuration
-- infrastructure as code
+- Terraform-managed infrastructure and an approved remote-state workflow
 - Amazon DynamoDB as the primary data store
 - Amazon Cognito for authentication
 - Amazon S3 for image storage if media features are introduced

@@ -45,6 +45,27 @@ CI requires no AWS credentials and performs validation only. It does not upload 
 deploy the package, create infrastructure or publish a release. Hosting,
 permissions and deployment remain separate future work.
 
+## Terraform Validation Boundary
+
+Terraform is the approved infrastructure-as-code tool for v0.6.0. The repository
+contains two independently initialized roots:
+
+- `infra/terraform/bootstrap` defines only the protected S3 bucket intended for
+  Terraform state. Its own state initially remains local and must not be applied
+  until AWS execution and state migration are separately approved.
+- `infra/terraform/environments/dev` defines a partial S3 backend and the
+  configuration contract for a future development deployment. The backend uses
+  native S3 lockfiles; bucket, key and region values are supplied through ignored
+  local backend configuration.
+
+The application root does not yet define Lambda, API Gateway, IAM, CloudWatch or
+other hosting resources. The existing `Cocktails` table is an external dependency
+and remains outside Terraform ownership.
+
+GitHub Actions pins Terraform, checks formatting, initializes both roots with
+`-backend=false` and validates them. CI supplies no AWS credentials and runs
+neither `terraform plan` nor `terraform apply`.
+
 `ALLOW_MUTATIONS=true` is intended only for trusted local development or test
 environments. The setting is a safety control rather than an authentication or
 authorisation boundary. The Lambda adapter, API Gateway event handling and AWS IAM
@@ -56,7 +77,11 @@ or deployment infrastructure.
 The v0.6.0 deployment milestone is to move the service into a hosted AWS
 environment while preserving the existing FastAPI structure and service layer. It
 will require an approved API Gateway/Lambda topology, least-privilege IAM,
-CloudWatch operational configuration and infrastructure as code.
+CloudWatch operational configuration and later Terraform implementation steps.
+
+No public endpoint or AWS hosting infrastructure exists after the Terraform
+foundation step. Planning, applying, deployment automation and GitHub OIDC remain
+subject to separate approval.
 
 The existing package builder installs from `requirements.txt` so the ZIP contains
 runtime dependencies only. Contributor and quality environments install
