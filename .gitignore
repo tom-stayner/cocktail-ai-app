@@ -25,3 +25,21 @@ logs/*
 # Generated Lambda package output
 /dist/
 /.lambda-build/
+
+# Terraform working directories and generated state
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+
+# Terraform plans, crash logs, and local configuration
+*.tfplan
+*.tfplan.*
+*.tfbackend
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+
+# Provider dependency locks are reviewed and tracked
+!.terraform.lock.hcl
+!**/.terraform.lock.hcl

@@ -34,9 +34,14 @@ for the current system shape.
 
 Deploy the validated application package through an approved AWS architecture.
 Expected concerns include Lambda, API Gateway, least-privilege IAM execution roles,
-CloudWatch operational configuration and infrastructure as code. The final service
-selection, topology and deployment process remain subject to architectural review;
-no AWS hosting resources are currently provisioned.
+CloudWatch operational configuration and Terraform-managed infrastructure.
+
+The first delivery step establishes separate Terraform bootstrap and development
+application roots, protected S3 state design with native lockfiles, and
+validation-only CI. Later steps will define and review hosting resources,
+permissions and deployment automation. The existing `Cocktails` table remains
+outside Terraform ownership, and no AWS hosting resources or public endpoint are
+currently provisioned.
 
 ### User Experience
 

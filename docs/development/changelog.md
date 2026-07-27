@@ -7,6 +7,33 @@ The format is based on the principles of
 and this project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - Unreleased
+
+**v0.6.0 — AWS Deployment**
+
+### Added
+
+- Added separate Terraform bootstrap and development application roots.
+- Added a protected S3 state-bucket design with encryption, versioning,
+  public-access blocking, TLS enforcement and deletion protection.
+- Added a partial S3 application backend using native S3 lockfiles without a
+  DynamoDB lock table.
+- Added validation-only Terraform CI covering formatting, backend-disabled
+  initialization and both root configurations.
+
+### Changed
+
+- Approved Terraform as the v0.6.0 infrastructure-as-code approach and documented
+  its trade-offs against SAM, CDK and raw CloudFormation.
+- Documented the existing cocktail DynamoDB table as outside Terraform ownership.
+
+### Deployment
+
+- Step 1 creates repository foundations only. It does not create Lambda, API
+  Gateway, IAM, CloudWatch, DynamoDB or public hosting infrastructure.
+
+---
+
 ## [0.5.0] - 2026-07-27
 
 **v0.5.0 — Serverless Application Readiness**
