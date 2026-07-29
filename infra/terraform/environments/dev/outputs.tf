@@ -50,3 +50,38 @@ output "lambda_alarm_names" {
     throttles = aws_cloudwatch_metric_alarm.lambda_throttles.alarm_name
   }
 }
+
+output "http_api_id" {
+  description = "ID of the defined public HTTP API."
+  value       = aws_apigatewayv2_api.public.id
+}
+
+output "http_api_name" {
+  description = "Name of the defined public HTTP API."
+  value       = aws_apigatewayv2_api.public.name
+}
+
+output "http_api_endpoint" {
+  description = "Execute API endpoint that will become public only after an approved apply."
+  value       = aws_apigatewayv2_api.public.api_endpoint
+}
+
+output "http_api_stage_name" {
+  description = "Name of the root-level auto-deploying HTTP API stage."
+  value       = aws_apigatewayv2_stage.default.name
+}
+
+output "http_api_access_log_group_name" {
+  description = "Name of the HTTP API structured access-log group."
+  value       = aws_cloudwatch_log_group.api_access.name
+}
+
+output "http_api_5xx_alarm_name" {
+  description = "Name of the HTTP API server-error alarm."
+  value       = aws_cloudwatch_metric_alarm.api_server_errors.alarm_name
+}
+
+output "public_route_keys" {
+  description = "Explicit unauthenticated GET routes defined for the public HTTP API."
+  value       = sort(tolist(local.public_get_route_keys))
+}

@@ -167,6 +167,33 @@ def test_openapi_version_matches_current_release():
     assert response.json()["info"]["version"] == "0.5.0"
 
 
+def test_openapi_hides_mutation_operations_when_mutations_are_disabled():
+    schema_paths = client.get("/openapi.json").json()["paths"]
+
+    assert "post" not in schema_paths["/cocktails"]
+    assert "put" not in schema_paths["/cocktails/{cocktail_id}"]
+    assert "delete" not in schema_paths["/cocktails/{cocktail_id}"]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/",
+        "/health",
+        "/health/live",
+        "/health/ready",
+        "/cocktails",
+        "/cocktails/{cocktail_id}",
+        "/cocktails/html",
+        "/cocktails/html/{cocktail_id}",
+    ],
+)
+def test_openapi_preserves_approved_get_operations(path):
+    schema_paths = client.get("/openapi.json").json()["paths"]
+
+    assert "get" in schema_paths[path]
+
+
 def test_application_metadata_uses_central_settings():
     assert app.title == settings.app_name
     assert app.version == settings.app_version
@@ -443,6 +470,8 @@ def test_html_collection_routes_use_service(monkeypatch):
     assert library_response.status_code == 200
     assert "Margarita" in home_response.text
     assert "Tequila" in library_response.text
+    assert "Running locally on FastAPI" not in home_response.text
+    assert "Served by Tom's Cocktail API" in home_response.text
 
 
 def test_html_collection_routes_escape_dynamic_content(monkeypatch):

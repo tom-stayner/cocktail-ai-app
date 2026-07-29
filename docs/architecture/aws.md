@@ -52,7 +52,7 @@ The existing `Cocktails` DynamoDB table remains operational application data
 outside Terraform ownership. Step 1 does not define, import, modify or transfer
 ownership of that table.
 
-## Defined Lambda Runtime — Not Deployed
+## Defined AWS Runtime — Not Deployed
 
 The v0.6.0 development Terraform root now defines a private Lambda runtime layer,
 but none of these resources has been planned against AWS or deployed:
@@ -83,18 +83,46 @@ The `live` alias establishes a rollback boundary: an emergency rollback may repo
 the alias to an earlier immutable version, but Terraform configuration and state
 must then be reconciled through an approved workflow.
 
-API Gateway, Lambda invocation permission and public URLs remain deferred. No
-public endpoint exists, and `ALLOW_MUTATIONS=false` remains a fail-closed safety
-control rather than authentication.
+The development root also defines an unauthenticated API Gateway HTTP API using
+payload format 2.0 and an auto-deploying `$default` stage. The stage avoids a URL
+prefix; it is not a `$default` catch-all route. Only an explicit allowlist of
+twelve GET routes is connected to the `live` Lambda alias:
+
+- `/`, `/favicon.ico`, `/static/{proxy+}`, `/docs` and `/openapi.json`;
+- `/health`, `/health/live` and `/health/ready`; and
+- `/cocktails`, `/cocktails/{cocktail_id}`, `/cocktails/html` and
+  `/cocktails/html/{cocktail_id}`.
+
+The invocation permission is qualified to the `live` alias and restricted to GET
+requests from this API. Public read-only behaviour is reinforced in three layers:
+Terraform defines no mutation or catch-all route, its lifecycle precondition
+requires `ALLOW_MUTATIONS=false`, and the application continues to reject mutation
+requests while omitting those operations from OpenAPI when mutations are disabled.
+This setting is a fail-closed safety control, not authentication.
+
+The stage applies best-effort default throttling of five requests per second with
+a burst of ten. Throttling limits load but is not authentication, authorization or
+abuse prevention. Structured access logs retain request and response metadata for
+14 days without bodies, query strings, cookies, source IP addresses or user-agent
+values. An HTTP API 5xx alarm has no notification action.
+
+CORS is intentionally absent because the current HTML and API share one origin.
+Public accessibility does not grant cross-origin browser access; command-line and
+other non-browser clients are unaffected. A future separately hosted browser
+client must use an explicit origin allowlist rather than a wildcard.
+No custom domain, Cognito authorizer, WAF, deployment automation or public endpoint
+has been created. These resources are definitions only and have not been planned
+against AWS or applied.
 
 ## Future Direction
 
 A future deployment is expected to address:
 - AWS Lambda hosting for the validated application package
-- Amazon API Gateway integration
-- an approved AWS-backed review and deployment of the defined Lambda, IAM and
-  CloudWatch resources
+- an approved AWS-backed review and deployment of the defined Lambda, API Gateway,
+  IAM and CloudWatch resources
 - Terraform-managed infrastructure and an approved remote-state workflow
+- CORS with an explicit origin allowlist when a browser client requires it
+- authentication, a custom domain, WAF and notification routing when justified
 - Amazon DynamoDB as the primary data store
 - Amazon Cognito for authentication
 - Amazon S3 for image storage if media features are introduced

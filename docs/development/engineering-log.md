@@ -1,5 +1,43 @@
 # Engineering Log
 
+## 2026-07-29 — v0.6.0 Public Read-Only API Definition
+
+### Context
+
+The defined Lambda runtime needed a deliberately narrow public ingress contract
+before any AWS-backed planning or deployment.
+
+### Decisions
+
+- Selected API Gateway HTTP API with Lambda proxy payload format 2.0 for the
+  simpler, lower-cost FastAPI ingress needed at this stage.
+- Connected twelve explicit unauthenticated GET routes to the immutable `live`
+  alias and granted alias-qualified invocation only for API GET requests.
+- Used a `$default` stage to avoid a URL prefix without defining a catch-all
+  route.
+- Reinforced read-only exposure through the Terraform route allowlist, a
+  fail-closed lifecycle precondition and application/OpenAPI mutation controls.
+- Added best-effort default throttling, privacy-conscious structured access logs
+  with 14-day retention and a 5xx alarm without notification actions.
+
+### Trade-offs
+
+- Public read-only access and throttling are not authentication or comprehensive
+  abuse prevention.
+- HTTP API is sufficient for the current proxy integration; REST API features are
+  not justified by the present requirements.
+- CORS remains absent until a browser origin is approved, when an explicit
+  allowlist will be required.
+- No custom domain, Cognito authorizer, WAF or alarm notification channel is
+  included.
+
+### Outcome
+
+The public read-only API contract is statically defined but has not been planned
+against AWS, applied or deployed. No public URL exists.
+
+---
+
 ## 2026-07-27 — v0.6.0 Private Lambda Runtime Definition
 
 ### Context

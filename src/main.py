@@ -194,7 +194,7 @@ def root() -> HTMLResponse:
     </ul>
 
     <p>
-        Running locally on FastAPI 🚀
+        Served by Tom's Cocktail API
     </p>
     """
 
@@ -307,7 +307,11 @@ def get_cocktail(cocktail_id: int) -> dict:
     return cocktail_service.get_cocktail(cocktail_id)
 
 
-@app.post("/cocktails", dependencies=[Depends(require_mutations_enabled)])
+@app.post(
+    "/cocktails",
+    dependencies=[Depends(require_mutations_enabled)],
+    include_in_schema=settings.allow_mutations,
+)
 def create_cocktail(cocktail: Cocktail) -> dict:
     return cocktail_service.create_cocktail(cocktail)
 
@@ -315,6 +319,7 @@ def create_cocktail(cocktail: Cocktail) -> dict:
 @app.delete(
     "/cocktails/{cocktail_id}",
     dependencies=[Depends(require_mutations_enabled)],
+    include_in_schema=settings.allow_mutations,
 )
 def delete_cocktail(cocktail_id: int) -> dict:
     return cocktail_service.delete_cocktail(cocktail_id)
@@ -323,6 +328,7 @@ def delete_cocktail(cocktail_id: int) -> dict:
 @app.put(
     "/cocktails/{cocktail_id}",
     dependencies=[Depends(require_mutations_enabled)],
+    include_in_schema=settings.allow_mutations,
 )
 def update_cocktail(cocktail_id: int, cocktail: Cocktail) -> dict:
     return cocktail_service.update_cocktail(cocktail_id, cocktail)
