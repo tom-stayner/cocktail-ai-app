@@ -38,10 +38,10 @@ interactions and packaging downloads dependencies without invoking AWS APIs.
 
 ## Terraform Validation
 
-Terraform defines the state foundation and the future private Lambda runtime.
-These resources are not deployed and must be validated without AWS credentials,
-plans or applies. Build the real ignored Lambda package before validating the
-development root because Terraform hashes its contents:
+Terraform defines the state foundation and the future Lambda and public read-only
+HTTP API runtime. These resources are not deployed and must be validated without
+AWS credentials, plans or applies. Build the real ignored Lambda package before
+validating the development root because Terraform hashes its contents:
 
 ```text
 terraform fmt -check -recursive infra/terraform
@@ -74,8 +74,16 @@ actions.
 
 Lambda automatically supplies the reserved `AWS_REGION` environment variable.
 Terraform must not configure it explicitly; the application reads the runtime
-value normally. API Gateway, invocation permission and a public endpoint remain
-deferred.
+value normally.
+
+The development root defines, but does not deploy, a payload-v2 HTTP API exposing
+only an explicit GET allowlist through the Lambda `live` alias. Its `$default`
+stage removes a path prefix and is not a catch-all route. Default throttling is
+five requests per second with a burst of ten. Access logs omit request bodies,
+query strings, cookies, source IPs and user-agent values and use the existing
+14-day retention setting. CORS, authentication, a custom domain and WAF are not
+configured. Do not treat the public read-only design or throttling as an
+authentication boundary.
 
 ## Lambda Package Build
 

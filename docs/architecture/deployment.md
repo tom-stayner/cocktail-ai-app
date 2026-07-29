@@ -58,11 +58,11 @@ contains two independently initialized roots:
   native S3 lockfiles; bucket, key and region values are supplied through ignored
   local backend configuration.
 
-The application root defines the private Lambda runtime, its least-privilege
-execution role, explicit log group, immutable-version alias and baseline alarms.
-These definitions have only been statically validated. They have not been planned
-against AWS, applied or deployed. The existing `Cocktails` table is resolved as an
-external data source and remains outside Terraform ownership.
+The application root defines the Lambda runtime, its least-privilege execution
+role, explicit log group, immutable-version alias, public read-only HTTP API and
+baseline alarms. These definitions have only been statically validated. They have
+not been planned against AWS, applied or deployed. The existing `Cocktails` table
+is resolved as an external data source and remains outside Terraform ownership.
 
 GitHub Actions pins Terraform, checks formatting, initializes both roots with
 `-backend=false` and validates them. CI supplies no AWS credentials and runs
@@ -102,6 +102,51 @@ authorisation boundary. The Lambda adapter, API Gateway event handling and AWS I
 do not add application-user authentication, and this release adds no authentication
 or deployment infrastructure.
 
+## Defined Public API Boundary
+
+The defined API Gateway v2 HTTP API uses Lambda proxy payload format 2.0 and
+integrates with the immutable `live` alias. The Lambda permission is qualified to
+that alias and restricted to GET requests from this API.
+
+The auto-deploying `$default` stage places approved routes at the root URL. It does
+not create a `$default` route: Terraform explicitly defines only these twelve
+unauthenticated GET route keys:
+
+```text
+GET /
+GET /favicon.ico
+GET /static/{proxy+}
+GET /docs
+GET /openapi.json
+GET /health
+GET /health/live
+GET /health/ready
+GET /cocktails
+GET /cocktails/{cocktail_id}
+GET /cocktails/html
+GET /cocktails/html/{cocktail_id}
+```
+
+No `ANY`, POST, PUT, DELETE or catch-all route is defined. Terraform additionally
+requires `ALLOW_MUTATIONS=false` before the API can be created, while the
+application rejects mutation requests and hides them from OpenAPI under that
+setting. These layers reduce accidental write exposure but do not authenticate
+callers.
+
+The stage defaults to a best-effort rate of five requests per second and a burst
+of ten. API Gateway throttling protects capacity but is not a security boundary.
+Structured access logs retain operational request and response metadata for 14
+days. They omit bodies, query strings, cookies, source IP addresses and user-agent
+values. A five-minute HTTP API 5xx alarm triggers at one error, treats missing data
+as non-breaching and has no notification action.
+
+CORS is not configured because the current HTML and API use the same origin.
+Public accessibility does not grant cross-origin browser access, while
+command-line and other non-browser clients are unaffected. A future separately
+hosted browser client requires an explicit origin allowlist; wildcard CORS must
+not be introduced casually. No custom domain, Cognito authorizer, WAF or
+deployment automation is defined.
+
 ## Future Direction
 
 The v0.6.0 deployment milestone is to move the service into a hosted AWS
@@ -110,8 +155,8 @@ will require an approved API Gateway/Lambda topology, least-privilege IAM,
 CloudWatch operational configuration and later Terraform implementation steps.
 
 No public endpoint or deployed AWS hosting infrastructure exists after this step.
-API Gateway, Lambda invocation permission, planning, applying, deployment
-automation and GitHub OIDC remain subject to separate approval.
+Planning, applying, deployment automation and GitHub OIDC remain subject to
+separate approval.
 
 The existing package builder installs from `requirements.txt` so the ZIP contains
 runtime dependencies only. Contributor and quality environments install

@@ -139,6 +139,31 @@ variable "log_retention_days" {
   }
 }
 
+variable "api_throttling_rate_limit" {
+  description = "Best-effort sustained request rate for the future public HTTP API."
+  type        = number
+  default     = 5
+
+  validation {
+    condition     = var.api_throttling_rate_limit > 0
+    error_message = "api_throttling_rate_limit must be greater than zero."
+  }
+}
+
+variable "api_throttling_burst_limit" {
+  description = "Best-effort burst request limit for the future public HTTP API."
+  type        = number
+  default     = 10
+
+  validation {
+    condition = (
+      var.api_throttling_burst_limit > 0 &&
+      floor(var.api_throttling_burst_limit) == var.api_throttling_burst_limit
+    )
+    error_message = "api_throttling_burst_limit must be a positive integer."
+  }
+}
+
 variable "additional_tags" {
   description = "Additional non-sensitive tags to apply without replacing mandatory tags."
   type        = map(string)

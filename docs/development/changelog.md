@@ -26,6 +26,10 @@ and this project follows
   access and conditional write permissions.
 - Added an explicit 14-day Lambda log group and baseline error and throttle
   alarms without notification actions.
+- Added a statically validated API Gateway HTTP API with twelve explicit
+  unauthenticated GET routes integrated with the Lambda `live` alias.
+- Added alias-qualified Lambda invocation permission, default API throttling,
+  privacy-conscious 14-day access logs and a baseline HTTP API 5xx alarm.
 
 ### Changed
 
@@ -34,11 +38,15 @@ and this project follows
 - Documented the existing cocktail DynamoDB table as outside Terraform ownership.
 - Terraform validation now builds and audits the real Lambda package before
   validating its source-code hash.
+- Mutation operations are omitted from OpenAPI when the fail-closed mutation
+  setting is disabled, and the landing page no longer describes the service as
+  local-only.
 
 ### Deployment
 
-- The Lambda, IAM and CloudWatch runtime layer is defined but not deployed.
-  API Gateway, invocation permission and a public endpoint remain deferred.
+- The Lambda, IAM, CloudWatch and public read-only API layers are defined but not
+  deployed. No public endpoint, CORS policy, authentication, custom domain, WAF or
+  deployment automation exists.
 
 ---
 

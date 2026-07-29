@@ -40,11 +40,14 @@ The first delivery step establishes separate Terraform bootstrap and development
 application roots, protected S3 state design with native lockfiles, and
 validation-only CI. The second step defines, but does not deploy, a private Lambda
 runtime with least-privilege table access, explicit log retention, immutable
-versions, a `live` alias and baseline error and throttle alarms. The existing
+versions, a `live` alias and baseline error and throttle alarms. The third step
+defines an explicit unauthenticated GET-only HTTP API, alias-qualified invocation,
+best-effort throttling, privacy-conscious access logs and a 5xx alarm. The existing
 `Cocktails` table remains outside Terraform ownership.
 
-Later steps will add and review API Gateway integration, invocation permission and
-deployment automation. No AWS hosting resources or public endpoint are currently
+Later steps will review AWS-backed plans and deployment automation. Authentication,
+explicit browser CORS origins, a custom domain, WAF and alert notification routing
+remain future decisions. No AWS hosting resources or public endpoint are currently
 provisioned.
 
 ### User Experience
