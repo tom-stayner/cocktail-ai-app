@@ -48,15 +48,23 @@ permissions and deployment remain separate future work.
 ## Terraform Validation Boundary
 
 Terraform is the approved infrastructure-as-code tool for v0.6.0. The repository
-contains two independently initialized roots:
+contains two independently managed roots:
 
 - `infra/terraform/bootstrap` defines only the protected S3 bucket intended for
-  Terraform state. Its own state initially remains local and must not be applied
-  until AWS execution and state migration are separately approved.
-- `infra/terraform/environments/dev` defines a partial S3 backend and the
-  configuration contract for a future development deployment. The backend uses
-  native S3 lockfiles; bucket, key and region values are supplied through ignored
-  local backend configuration.
+  Terraform state and declares a partial encrypted S3 backend for eventual
+  adoption. Its authoritative state remains local.
+- `infra/terraform/environments/dev` defines a partial encrypted S3 backend and
+  the configuration contract for a future development deployment. Its backend
+  and state remain uninitialized.
+
+Both backend declarations enable native S3 lockfiles. Bucket, key and region are
+supplied through ignored `*.tfbackend` files, using the proposed keys
+`bootstrap/terraform.tfstate` and `environments/dev/terraform.tfstate`.
+
+Backend initialization and bootstrap-state migration require separate Step 6B
+approval. Step 6B will define permanent least-privilege permissions for each exact
+state object and separate `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject`
+permissions for the corresponding `.tflock` object.
 
 The application root defines the Lambda runtime, its least-privilege execution
 role, explicit log group, immutable-version alias, public read-only HTTP API and

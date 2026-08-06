@@ -1,7 +1,7 @@
 # AWS Architecture
 
-The current implementation is ready to package for AWS Lambda but does not use
-provisioned AWS hosting infrastructure or expose a deployed public endpoint.
+The current implementation is ready to package for AWS Lambda but does not yet
+deploy application hosting infrastructure or expose a public endpoint.
 
 ## Current Implementation
 
@@ -20,9 +20,9 @@ AWS operating model.
 
 ## Terraform Foundation
 
-Terraform is the approved infrastructure-as-code approach for v0.6.0. Step 1 adds
-repository structure and static validation only; it does not create AWS resources
-or expose a public endpoint.
+Terraform is the approved infrastructure-as-code approach for v0.6.0. Step 6A
+adds remote-backend declarations and documentation only; it does not change AWS
+resources, initialize a remote backend, migrate state or expose a public endpoint.
 
 Terraform was selected because it provides declarative planning, mature AWS
 provider coverage, reviewable state-aware changes and a direct path from local
@@ -35,22 +35,32 @@ so the repository defines that boundary explicitly from the outset.
 
 The Terraform layout has two independent roots:
 
-- `infra/terraform/bootstrap` owns only the future S3 state bucket and its
-  protections. It starts with local state; migration of bootstrap state is
-  deferred until a separately approved AWS execution step.
+- `infra/terraform/bootstrap` owns only the protected S3 state bucket and its
+  protections. It declares a partial encrypted S3 backend for eventual adoption,
+  but its authoritative state remains local.
 - `infra/terraform/environments/dev` holds the future development application
-  configuration. Its partial S3 backend enables native S3 lockfiles and receives
-  environment-specific backend values outside version control.
+  configuration. Its partial encrypted S3 backend enables native S3 lockfiles,
+  but its backend and state remain uninitialized.
 
-The planned state bucket enables versioning, SSE-S3 encryption, bucket-owner
+Bucket, key and region values continue to be supplied through ignored
+`*.tfbackend` files. The proposed state keys are `bootstrap/terraform.tfstate` and
+`environments/dev/terraform.tfstate`. Both backend declarations set
+`encrypt = true` and `use_lockfile = true`.
+
+Backend initialization and bootstrap-state migration remain gated on separate
+Step 6B approval. That step will define permanent least-privilege access to the
+exact state objects and separate `s3:GetObject`, `s3:PutObject` and
+`s3:DeleteObject` permissions for their native `.tflock` objects.
+
+The state bucket enables versioning, SSE-S3 encryption, bucket-owner
 enforced ownership, complete public-access blocking and a policy that denies
 non-TLS requests. Terraform deletion protection is also configured. Application
 state will use S3 native lockfiles through `use_lockfile = true`; no DynamoDB state
 lock table is proposed.
 
 The existing `Cocktails` DynamoDB table remains operational application data
-outside Terraform ownership. Step 1 does not define, import, modify or transfer
-ownership of that table.
+outside Terraform ownership. The Terraform configuration does not define, import,
+modify or transfer ownership of that table.
 
 ## Defined AWS Runtime — Not Deployed
 
