@@ -57,11 +57,20 @@ Initialization downloads the declared provider from the Terraform Registry and
 generates a tracked `.terraform.lock.hcl` in each root. The generated
 `.terraform/` working directories remain ignored.
 
-The bootstrap root is intentionally configured with local state until a separately
-approved AWS execution and state-migration step. The development root uses a
-partial S3 backend with native lockfiles. Supply its future bucket, key and region
-through an ignored `*.tfbackend` file; do not commit backend configuration, state,
-plans, credentials or environment-specific `.tfvars`.
+Both roots declare partial S3 backends with encryption and native S3 lockfiles.
+Continue supplying the bucket, key and region through ignored `*.tfbackend` files;
+do not commit backend configuration, state, plans, credentials or
+environment-specific `.tfvars`. The proposed state keys are:
+
+- `bootstrap/terraform.tfstate`
+- `environments/dev/terraform.tfstate`
+
+The bootstrap state remains local, and the development backend and state remain
+uninitialized. Do not initialize either remote backend or migrate or upload state
+until Step 6B is separately approved. Step 6B will define the permanent
+least-privilege backend policy, including exact access to each state object and
+separate `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject` permissions for the
+corresponding native `.tflock` objects.
 
 Do not run `terraform plan` or `terraform apply` during static validation. The
 existing `Cocktails` DynamoDB table remains outside Terraform ownership.

@@ -14,10 +14,10 @@ and this project follows
 ### Added
 
 - Added separate Terraform bootstrap and development application roots.
-- Added a protected S3 state-bucket design with encryption, versioning,
+- Added a protected S3 state bucket with encryption, versioning,
   public-access blocking, TLS enforcement and deletion protection.
-- Added a partial S3 application backend using native S3 lockfiles without a
-  DynamoDB lock table.
+- Added partial encrypted S3 backend declarations to both Terraform roots using
+  native S3 lockfiles without a DynamoDB lock table.
 - Added validation-only Terraform CI covering formatting, backend-disabled
   initialization and both root configurations.
 - Added a statically validated private Lambda definition using the audited Python
@@ -36,6 +36,9 @@ and this project follows
 - Approved Terraform as the v0.6.0 infrastructure-as-code approach and documented
   its trade-offs against SAM, CDK and raw CloudFormation.
 - Documented the existing cocktail DynamoDB table as outside Terraform ownership.
+- Documented the proposed `bootstrap/terraform.tfstate` and
+  `environments/dev/terraform.tfstate` state keys, supplied with bucket and region
+  through ignored `*.tfbackend` files.
 - Terraform validation now builds and audits the real Lambda package before
   validating its source-code hash.
 - Mutation operations are omitted from OpenAPI when the fail-closed mutation
@@ -44,6 +47,10 @@ and this project follows
 
 ### Deployment
 
+- The protected state bucket exists, while bootstrap state remains local and the
+  development backend and state remain uninitialized. Backend initialization,
+  state migration and permanent least-privilege backend IAM remain gated on
+  separate Step 6B approval.
 - The Lambda, IAM, CloudWatch and public read-only API layers are defined but not
   deployed. No public endpoint, CORS policy, authentication, custom domain, WAF or
   deployment automation exists.
